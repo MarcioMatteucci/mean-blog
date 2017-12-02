@@ -1,0 +1,34 @@
+{
+  "name": "mean-jwt-blog",
+  "version": "1.0.0",
+  "description": "Blog en el MEAN Stack con autenticación de usuario con JWT",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarcioMatteucci/mean-jwt-blog.git"
+  },
+  "keywords": [
+    "Blog",
+    "MEAN",
+    "Stack",
+    "JWT"
+  ],
+  "author": "Marcio Matteucci",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MarcioMatteucci/mean-jwt-blog/issues"
+  },
+  "homepage": "https://github.com/MarcioMatteucci/mean-jwt-blog#readme",
+  "devDependencies": {
+    "morgan": "^1.9.0",
+    "nodemon": "^1.12.1"
+  },
+  "dependencies": {
+    "express": "^4.16.2",
+    "mongoose": "^4.13.5"
+  }
+}
