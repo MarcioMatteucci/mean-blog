@@ -1,11 +1,13 @@
 const router = require('express').Router();
+const passport = require('passport');
 
-router.get('/', (req, res, next) => {
-   res.json({ res: 'GET request de user' });
-});
+const UsersController = require('../controllers/usersController');
+const passportConfig = require('../config/passport');
 
-router.post('/', (req, res, next) => {
-   res.json({ user: req.body.user });
-})
+router.post('/signUp', UsersController.signUp);
+
+router.post('/signIn', [], passport.authenticate('local', { session: false }), UsersController.signIn);
+
+router.get('/secret', [], passport.authenticate('jwt', { session: false }), UsersController.secret);
 
 module.exports = router;
