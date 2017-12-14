@@ -13,7 +13,7 @@ module.exports = {
                         next()
                   })
                   .catch(response => {
-                        res.status(response.status).json({ success: false, msg: response.message });
+                        res.status(response.status).json({ msg: response.message });
                   });
       },
 
@@ -27,7 +27,7 @@ module.exports = {
                         next()
                   })
                   .catch(response => {
-                        res.status(response.status).json({ success: false, msg: response.message });
+                        res.status(response.status).json({ msg: response.message });
                   })
 
       }

@@ -15,11 +15,12 @@ module.exports = {
     // Validar que el email y username esten disponibles
     const sameEmailUser = await User.findOne({ email });
     if (sameEmailUser) {
-      return res.status(403).json({ success: false, msg: 'El Email ya esta en uso' });
+      return res.status(403).json({ msg: 'El Email ya esta en uso' });
     }
+
     const sameUsernameUser = await User.findOne({ username });
     if (sameUsernameUser) {
-      return res.status(403).json({ success: false, msg: 'El Nombre de Usuario ya esta en uso' });
+      return res.status(403).json({ msg: 'El Nombre de Usuario ya esta en uso' });
     }
 
     // Crea nuevo usuario con los datos del body
@@ -31,7 +32,7 @@ module.exports = {
         const token = await jwt.signToken(user);
         return res.status(201).json({ msg: 'Usuario creado', user, token });
       })
-      .catch((err) => {
+      .catch(async (err) => {
         return res.status(500).json({ error: err });
       });
 
