@@ -13,25 +13,14 @@ module.exports = {
     const email = await req.body.email.toLowerCase();
 
     // Validar que el email y username esten disponibles
-    await User.findOne({ email }).exec()
-      .then((email) => {
-        if (email) {
-          return res.status(403).json({ msg: 'El Email ya esta en uso' });
-        }
-      })
-      .catch((err) => {
-        return res.status(500).json({ error: err });
-      });
-
-    await User.findOne({ username }).exec()
-      .then((username) => {
-        if (username) {
-          return res.status(403).json({ msg: 'El Nombre de Usuario ya esta en uso' });
-        }
-      })
-      .catch((err) => {
-        return res.status(500).json({ error: err });
-      });
+    const sameEmailUser = await User.findOne({ email });
+    if (sameEmailUser) {
+      return res.status(403).json({ success: false, msg: 'El Email ya esta en uso' });
+    }
+    const sameUsernameUser = await User.findOne({ username });
+    if (sameUsernameUser) {
+      return res.status(403).json({ success: false, msg: 'El Nombre de Usuario ya esta en uso' });
+    }
 
     // Crea nuevo usuario con los datos del body
     const newUser = await new User({ name, lastname, username, password, email, role });
