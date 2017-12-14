@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "net start MongoDB && nodemon server.js"
   },
   "repository": {
     "type": "git",

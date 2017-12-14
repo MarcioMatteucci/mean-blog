@@ -13,14 +13,25 @@ module.exports = {
     const email = await req.body.email.toLowerCase();
 
     // Validar que el email y username esten disponibles
-    const sameEmailUser = await User.findOne({ email });
-    if (sameEmailUser) {
-      return res.status(403).json({ success: false, msg: 'El Email ya esta en uso' });
-    }
-    const sameUsernameUser = await User.findOne({ username });
-    if (sameUsernameUser) {
-      return res.status(403).json({ success: false, msg: 'El Nombre de Usuario ya esta en uso' });
-    }
+    await User.findOne({ email }).exec()
+      .then((email) => {
+        if (email) {
+          return res.status(403).json({ msg: 'El Email ya esta en uso' });
+        }
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err });
+      });
+
+    await User.findOne({ username }).exec()
+      .then((username) => {
+        if (username) {
+          return res.status(403).json({ msg: 'El Nombre de Usuario ya esta en uso' });
+        }
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err });
+      });
 
     // Crea nuevo usuario con los datos del body
     const newUser = await new User({ name, lastname, username, password, email, role });
@@ -29,10 +40,10 @@ module.exports = {
     await newUser.save()
       .then(async (user) => {
         const token = await jwt.signToken(user);
-        return res.status(201).json({ success: true, msg: 'Usuario creado', user, token });
+        return res.status(201).json({ msg: 'Usuario creado', user, token });
       })
       .catch((err) => {
-        return res.status(500).json({ success: false, msg: err });
+        return res.status(500).json({ error: err });
       });
 
   },
@@ -45,27 +56,27 @@ module.exports = {
     // Datos del body
     const { username, password } = await req.body;
 
-    User.findOne({ username }, async (err, user) => {
-      if (err) {
-        return res.status(500).json({ success: false, msg: err });
-      }
-
-      if (!user) {
-        return res.status(404).json({ success: false, msg: 'Nombre de Usuario y/o contraseña incorrectos' });
-      }
-
-      if (user) {
-        const isMatch = await user.isValidPassword(password);
-
-        if (!isMatch) {
-          return res.status(404).json({ success: false, msg: 'Nombre de Usuario y/o contraseña incorrectos' });
+    User.findOne({ username }).exec()
+      .then(async (user) => {
+        if (!user) {
+          return res.status(404).json({ msg: 'Nombre de Usuario y/o contraseña incorrectos' });
         }
 
-        const token = await jwt.signToken(user);
+        if (user) {
+          const isMatch = await user.isValidPassword(password);
 
-        res.status(200).json({ success: true, msg: 'Login satisfactorio', token });
-      }
-    });
+          if (!isMatch) {
+            return res.status(404).json({ msg: 'Nombre de Usuario y/o contraseña incorrectos' });
+          }
+
+          const token = await jwt.signToken(user);
+
+          res.status(200).json({ msg: 'Login satisfactorio', token });
+        }
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err });
+      });
 
   }
 
