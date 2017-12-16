@@ -17,14 +17,14 @@
           <i class="fa fa-user" aria-hidden="true"></i>
         </span>
 
-        <input [ngClass]="{ 'is-invalid': signUpForm.get('username').invalid && (signUpForm.get('username').dirty || signUpForm.get('username').touched), 'is-valid': signUpForm.get('username').valid && (signUpForm.get('username').dirty || signUpForm.get('username').touched) }"
+        <input [ngClass]="{ 'is-invalid': username.invalid && (username.dirty || username.touched), 'is-valid': username.valid && (username.dirty || username.touched) }"
           class="form-control" type="text" placeholder="Ingrese un nombre de usuario..." formControlName="username">
 
       </div>
 
-      <div class="invalid-feedback d-flex ml-5" *ngIf="signUpForm.get('username').invalid && (signUpForm.get('username').dirty || signUpForm.get('username').touched)">
-        <p *ngIf="signUpForm.get('username').hasError('required')">El campo es requerido.</p>
-        <p *ngIf="signUpForm.get('username').hasError('minlength') || signUpForm.get('username').hasError('maxlength')">El campo debe tener entre 3 y 50 caracteres.</p>
+      <div class="invalid-feedback d-flex ml-5" *ngIf="username.invalid && (username.dirty || username.touched)">
+        <p *ngIf="username.hasError('required')">El campo es requerido.</p>
+        <p *ngIf="username.hasError('minlength') || username.hasError('maxlength')">El campo debe tener entre 3 y 50 caracteres.</p>
       </div>
 
     </div>
@@ -43,14 +43,15 @@
               <i class="fa fa-lock" aria-hidden="true"></i>
             </span>
 
-            <input [ngClass]="{ 'is-invalid': signUpForm.get('password').invalid && (signUpForm.get('password').dirty || signUpForm.get('password').touched), 'is-valid': signUpForm.get('password').valid && (signUpForm.get('password').dirty || signUpForm.get('password').touched) }"
-              type="password" class="form-control" autocomplete="off" placeholder="(6-30 caracteres)..." formControlName="password">
+            <input [ngClass]="{ 'is-invalid': password.invalid && (password.dirty || password.touched), 'is-valid': password.valid && (password.dirty || password.touched) }"
+              type="password" class="form-control" autocomplete="off" placeholder="de 6 a 30 caracteres alfanuméricos." formControlName="password">
 
           </div>
 
-          <div class="invalid-feedback d-flex ml-5" *ngIf="signUpForm.get('password').invalid && (signUpForm.get('password').dirty || signUpForm.get('password').touched)">
-            <p *ngIf="signUpForm.get('password').hasError('required')">El campo es requerido.</p>
-            <p *ngIf="signUpForm.get('password').hasError('minlength') || signUpForm.get('password').hasError('maxlength')">El campo debe tener entre 6 y 30 caracteres.</p>
+          <div class="invalid-feedback d-flex ml-5" *ngIf="password.invalid && (password.dirty || password.touched)">
+            <p *ngIf="password.hasError('required')">El campo es requerido.</p>
+            <p *ngIf="password.hasError('minlength') || password.hasError('maxlength')">El campo debe tener entre 6 y 30 caracteres.</p>
+            <p *ngIf="password.hasError('pattern') && !(password.hasError('required') || password.hasError('minlength') || password.hasError('maxlength'))">No se permiten caracteres especiales. Solo números y/o letras.</p>
           </div>
 
         </div>
@@ -69,7 +70,12 @@
               <i class="fa fa-lock" aria-hidden="true"></i>
             </span>
 
-            <input type="password" class="form-control" autocomplete="off" placeholder="Confirme su contraseña..." formControlName="lastname">
+            <input [ngClass]="{ 'is-invalid': signUpForm.hasError('passwordsDontMatch') && (confirmPassword.dirty || confirmPassword.touched) || password.invalid && (password.dirty || password.touched), 'is-valid': !signUpForm.hasError('passwordsDontMatch') && (confirmPassword.valid && (confirmPassword.dirty || confirmPassword.touched)) }"
+              type="password" class="form-control" autocomplete="off" placeholder="Confirme su contraseña..." formControlName="confirmPassword">
+          </div>
+
+          <div class="invalid-feedback d-flex ml-5" *ngIf="signUpForm.hasError('passwordsDontMatch') && (confirmPassword.dirty || confirmPassword.touched)">
+            <p *ngIf="signUpForm.hasError('passwordsDontMatch')">Las contraseñas no coinciden.</p>
           </div>
 
         </div>
@@ -100,14 +106,14 @@
               <i class="fa fa-user" aria-hidden="true"></i>
             </span>
 
-            <input [ngClass]="{ 'is-invalid': signUpForm.get('name').invalid && (signUpForm.get('name').dirty || signUpForm.get('name').touched), 'is-valid': signUpForm.get('name').valid && (signUpForm.get('name').dirty || signUpForm.get('name').touched) }"
+            <input [ngClass]="{ 'is-invalid': name.invalid && (name.dirty || name.touched), 'is-valid': name.valid && (name.dirty || name.touched) }"
               type="text" class="form-control" autocomplete="off" placeholder="Ingrese su nombre..." formControlName="name">
 
           </div>
 
-          <div class="invalid-feedback d-flex ml-5" *ngIf="signUpForm.get('name').invalid && (signUpForm.get('name').dirty || signUpForm.get('name').touched)">
-            <p *ngIf="signUpForm.get('name').hasError('required')">El campo es requerido.</p>
-            <p *ngIf="signUpForm.get('name').hasError('minlength') || signUpForm.get('name').hasError('maxlength')">El campo debe tener entre 2 y 30 caracteres.</p>
+          <div class="invalid-feedback d-flex ml-5" *ngIf="name.invalid && (name.dirty || name.touched)">
+            <p *ngIf="name.hasError('required')">El campo es requerido.</p>
+            <p *ngIf="name.hasError('minlength') || name.hasError('maxlength')">El campo debe tener entre 2 y 30 caracteres.</p>
           </div>
 
         </div>
@@ -126,14 +132,14 @@
               <i class="fa fa-user" aria-hidden="true"></i>
             </span>
 
-            <input [ngClass]="{ 'is-invalid': signUpForm.get('lastname').invalid && (signUpForm.get('lastname').dirty || signUpForm.get('lastname').touched), 'is-valid': signUpForm.get('lastname').valid && (signUpForm.get('lastname').dirty || signUpForm.get('lastname').touched) }"
+            <input [ngClass]="{ 'is-invalid': lastname.invalid && (lastname.dirty || lastname.touched), 'is-valid': lastname.valid && (lastname.dirty || lastname.touched) }"
               type="text" class="form-control" autocomplete="off" placeholder="Ingrese su apellido" formControlName="lastname">
 
           </div>
 
-          <div class="invalid-feedback d-flex ml-5" *ngIf="signUpForm.get('lastname').invalid && (signUpForm.get('lastname').dirty || signUpForm.get('lastname').touched)">
-            <p *ngIf="signUpForm.get('lastname').hasError('required')">El campo es requerido.</p>
-            <p *ngIf="signUpForm.get('lastname').hasError('minlength') || signUpForm.get('lastname').hasError('maxlength')">El campo debe tener entre 2 y 50 caracteres.</p>
+          <div class="invalid-feedback d-flex ml-5" *ngIf="lastname.invalid && (lastname.dirty || lastname.touched)">
+            <p *ngIf="lastname.hasError('required')">El campo es requerido.</p>
+            <p *ngIf="lastname.hasError('minlength') || lastname.hasError('maxlength')">El campo debe tener entre 2 y 50 caracteres.</p>
           </div>
 
         </div>
@@ -153,14 +159,14 @@
           <i class="fa fa-at" aria-hidden="true"></i>
         </span>
 
-        <input [ngClass]="{ 'is-invalid': signUpForm.get('email').invalid && (signUpForm.get('email').dirty || signUpForm.get('email').touched), 'is-valid': signUpForm.get('email').valid && (signUpForm.get('email').dirty || signUpForm.get('email').touched) }"
+        <input [ngClass]="{ 'is-invalid': email.invalid && (email.dirty || email.touched), 'is-valid': email.valid && (email.dirty || email.touched) }"
           class="form-control" type="text" placeholder="Ingrese su email..." formControlName="email">
 
       </div>
 
-      <div class="invalid-feedback d-flex ml-5" *ngIf="signUpForm.get('email').invalid && (signUpForm.get('email').dirty || signUpForm.get('email').touched)">
-        <p *ngIf="signUpForm.get('email').hasError('required')">El campo es requerido.</p>
-        <p *ngIf="signUpForm.get('email').hasError('email')">No es un formato de mail válido.</p>
+      <div class="invalid-feedback d-flex ml-5" *ngIf="email.invalid && (email.dirty || email.touched)">
+        <p *ngIf="email.hasError('required')">El campo es requerido.</p>
+        <p *ngIf="email.hasError('email') && !email.hasError('required')">No es un formato de mail válido.</p>
       </div>
 
     </div>
