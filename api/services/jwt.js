@@ -13,7 +13,7 @@ module.exports = {
          exp: moment().add(1, 'days').unix() // 1 dia hasta que expire el token
       }
 
-      return JWT.sign(payload, JWT_SECRET);
+      return { token: JWT.sign(payload, JWT_SECRET), exp: payload.exp };
    },
 
    verifyToken: (token) => {

@@ -1,5 +1,6 @@
 // 3rd party Modules
 const express = require('express');
+const cors = require('cors');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -12,6 +13,7 @@ const app = express();
 
 // Middlewares
 app.use(morgan('dev'));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

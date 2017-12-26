@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 
 import { User } from './../../models/user.model';
-
+import { AuthService } from './../../services/auth.service';
 
 @Component({
   selector: 'blog-sign-up',
@@ -66,7 +66,7 @@ export class SignUpComponent implements OnInit {
 
 
   constructor(
-
+    private authService: AuthService
   ) {
     this.createSignUpForm();
   }
@@ -85,6 +85,19 @@ export class SignUpComponent implements OnInit {
   passwordsMatchValidator(g: FormGroup) {
     return g.get('password').value === g.get('confirmPassword').value
       ? null : { 'passwordsDontMatch': true };
+  }
+
+  signUp() {
+    const newUser = this.signUpForm.value;
+
+    this.authService.signUp(newUser)
+      .subscribe((data: any) => {
+        console.log(data);
+        // localStorage.setItem('token', data.token);
+      },
+      (err: any) => {
+        console.log(err);
+      });
   }
 
   ngOnInit() {

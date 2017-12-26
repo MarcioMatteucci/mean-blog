@@ -14,7 +14,7 @@ export class AuthService {
     private http: HttpClient
   ) { }
 
-  singUp(user: User) {
-    return this.http.post(this.apiUrl + 'singUp', user);
+  signUp(user: User) {
+    return this.http.post(this.apiUrl + 'auth/signUp', user);
   }
 }
