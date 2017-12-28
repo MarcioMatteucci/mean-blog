@@ -17,14 +17,15 @@
           <i class="fa fa-user" aria-hidden="true"></i>
         </span>
 
-        <input [ngClass]="{ 'is-invalid': username.invalid && (username.dirty || username.touched), 'is-valid': username.valid && (username.dirty || username.touched) }"
-          class="form-control" type="text" placeholder="Ingrese un nombre de usuario..." formControlName="username">
+        <input [ngClass]="{ 'is-invalid': (username.errors && username.dirty) || (!usernameValid && username.dirty), 'is-valid': username.valid && usernameValid }"
+          class="form-control" type="text" placeholder="Ingrese un nombre de usuario..." formControlName="username" (keyup)="checkUsername()">
 
       </div>
 
-      <div class="invalid-feedback d-flex ml-5" *ngIf="username.invalid && (username.dirty || username.touched)">
+      <div class="invalid-feedback d-flex ml-5" *ngIf="(username.errors && username.dirty) || (!usernameValid && username.dirty)">
         <p *ngIf="username.hasError('required')">El campo es requerido.</p>
         <p *ngIf="username.hasError('minlength') || username.hasError('maxlength')">El campo debe tener entre 3 y 50 caracteres.</p>
+        <p *ngIf="usernameMessage && !usernameValid && !username.hasError('required')">{{ usernameMessage }}</p>
       </div>
 
     </div>
@@ -91,6 +92,33 @@
     <h2>Información Personal:</h2>
     <hr>
 
+
+
+    <div class="form-group">
+
+      <label class="form-control-label">
+        <strong>Email:</strong>
+      </label>
+
+      <div class="input-group">
+
+        <span class="input-group-addon">
+          <i class="fa fa-at" aria-hidden="true"></i>
+        </span>
+
+        <input [ngClass]="{ 'is-invalid': (email.errors && email.dirty) || (!emailValid && email.dirty), 'is-valid': email.valid && emailValid }"
+          class="form-control" type="text" placeholder="Ingrese su email..." formControlName="email" (keyup)="checkEmail()">
+
+      </div>
+
+      <div class="invalid-feedback d-flex ml-5" *ngIf="(email.errors && email.dirty) || (!emailValid && email.dirty)">
+        <p *ngIf="email.hasError('required')">El campo es requerido.</p>
+        <p *ngIf="email.hasError('email') && !email.hasError('required')">No es un formato de mail válido.</p>
+        <p *ngIf="emailMessage && !emailValid && !email.hasError('email') && !email.hasError('required')">{{ emailMessage }}</p>
+      </div>
+
+    </div>
+
     <div class="form-row">
 
       <div class="col">
@@ -147,39 +175,16 @@
 
     </div>
 
-    <div class="form-group">
-
-      <label class="form-control-label">
-        <strong>Email:</strong>
-      </label>
-
-      <div class="input-group">
-
-        <span class="input-group-addon">
-          <i class="fa fa-at" aria-hidden="true"></i>
-        </span>
-
-        <input [ngClass]="{ 'is-invalid': email.invalid && (email.dirty || email.touched), 'is-valid': email.valid && (email.dirty || email.touched) }"
-          class="form-control" type="text" placeholder="Ingrese su email..." formControlName="email">
-
-      </div>
-
-      <div class="invalid-feedback d-flex ml-5" *ngIf="email.invalid && (email.dirty || email.touched)">
-        <p *ngIf="email.hasError('required')">El campo es requerido.</p>
-        <p *ngIf="email.hasError('email') && !email.hasError('required')">No es un formato de mail válido.</p>
-      </div>
-
-    </div>
-
   </div>
 
   <hr>
 
   <div class="row">
-    <button type="button" class="btn btn-success ml-3" (click)="signUp()">
+    <button [disabled]="!signUpForm.valid || processing || !emailValid || !usernameValid" type="button" class="btn btn-success ml-3"
+      (click)="signUp()">
       <i class="fa fa-check" aria-hidden="true"></i>&nbsp;&nbsp;Enviar
     </button>
-    <button type="button" class="btn btn-primary ml-3">
+    <button type="button" class="btn btn-primary ml-3" (click)="clearForm()">
       <i class="fa fa-recycle" aria-hidden="true"></i>&nbsp;&nbsp;Limpiar
     </button>
   </div>
@@ -188,6 +193,6 @@
 
 </form>
 
-<div>
+<!-- <div>
   {{ signUpForm.value | json }}
-</div>
+</div> -->

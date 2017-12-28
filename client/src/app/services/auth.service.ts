@@ -17,4 +17,12 @@ export class AuthService {
   signUp(user: User) {
     return this.http.post(this.apiUrl + 'auth/signUp', user);
   }
+
+  checkUsername(username: string) {
+    return this.http.get(this.apiUrl + 'auth/checkUsername?username=' + username);
+  }
+
+  checkEmail(email: string) {
+    return this.http.get(this.apiUrl + 'auth/checkEmail?email=' + email);
+  }
 }

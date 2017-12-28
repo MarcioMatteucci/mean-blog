@@ -15,12 +15,12 @@ module.exports = {
     // Validar que el email y username esten disponibles
     const sameEmailUser = await User.findOne({ email });
     if (sameEmailUser) {
-      return res.status(403).json({ msg: 'El Email ya esta en uso' });
+      return res.status(403).json({ msg: 'El email está en uso' });
     }
 
     const sameUsernameUser = await User.findOne({ username });
     if (sameUsernameUser) {
-      return res.status(403).json({ msg: 'El Nombre de Usuario ya esta en uso' });
+      return res.status(403).json({ msg: 'El nombre de usuario está en uso' });
     }
 
     // Crea nuevo usuario con los datos del body
@@ -29,11 +29,12 @@ module.exports = {
     // Persistencia del nuevo usuario
     await newUser.save()
       .then(async (user) => {
-        const token = await jwt.signToken(user);
-        return res.status(201).json({ msg: 'Usuario creado', user, token });
+        const tokenInfo = await jwt.signToken(user);
+        return res.status(201).json({ msg: 'Usuario creado', user, tokenInfo });
       })
       .catch(async (err) => {
-        return res.status(500).json({ error: err });
+        console.log(err);
+        return res.status(500).json({ msg: 'Hay un error', error: err });
       });
 
   },
@@ -49,19 +50,60 @@ module.exports = {
     User.findOne({ username }).exec()
       .then(async (user) => {
         if (!user) {
-          return res.status(404).json({ msg: 'Nombre de Usuario y/o contraseña incorrectos' });
+          return res.status(404).json({ msg: 'Nombre de usuario y/o contraseña incorrectos' });
         }
 
         if (user) {
           const isMatch = await user.isValidPassword(password);
 
           if (!isMatch) {
-            return res.status(404).json({ msg: 'Nombre de Usuario y/o contraseña incorrectos' });
+            return res.status(404).json({ msg: 'Nombre de usuario y/o contraseña incorrectos' });
           }
 
           const token = await jwt.signToken(user);
 
           res.status(200).json({ msg: 'Login satisfactorio', token });
+        }
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err });
+      });
+
+  },
+
+  /*==================
+  Chequea el Username
+  ===================*/
+  checkUsername: async (req, res) => {
+
+    const username = await req.query.username;
+
+    User.findOne({ username }).exec()
+      .then(async (user) => {
+        if (user) {
+          return res.status(200).json({ isUsernameAvailable: false, msg: 'El nombre de usuario está en uso' });
+        } else if (!user) {
+          return res.status(200).json({ isUsernameAvailable: true, msg: 'El nombre de usario está disponible' });
+        }
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err });
+      });
+  },
+
+  /*================
+  Chequea el Email
+  =================*/
+  checkEmail: async (req, res) => {
+
+    const email = await req.query.email;
+
+    User.findOne({ email }).exec()
+      .then(async (user) => {
+        if (user) {
+          return res.status(200).json({ isEmailAvailable: false, msg: 'El email está en uso' });
+        } else if (!user) {
+          return res.status(200).json({ isEmailAvailable: true, msg: 'El email está disponible' });
         }
       })
       .catch((err) => {

@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { check, validationResult } = require('express-validator/check');
+const { check, validationResult, query } = require('express-validator/check');
 const { sanitize } = require('express-validator/filter');
 
 const usersController = require('../controllers/usersController');
@@ -43,10 +43,21 @@ router.post('/signUp', [
 router.post('/signIn', [
    sanitize('username').trim(),
    sanitize('username').escape(),
-   check('username', 'El usuario es requerido').not().isEmpty(),
+   check('username', 'El usuario es requerido').exists(),
    sanitize('password').trim(),
    sanitize('password').escape(),
-   check('password', 'La contraseña es requerida').not().isEmpty(),
+   check('password', 'La contraseña es requerida').exists(),
 ], checkErrors, usersController.signIn);
+
+router.get('/checkUsername', [
+   query('username', 'El Nombre de Usuario es requerido').exists(),
+   query('username', 'El usuario debe entre 3 y 50 caracteres').isLength({ min: 3, max: 50 }),
+], checkErrors, usersController.checkUsername);
+
+router.get('/checkEmail', [
+   query('email', 'El email es requerido').exists(),
+   query('email', 'No es un formato de email válido').isEmail(),
+], checkErrors, usersController.checkEmail);
+
 
 module.exports = router;
