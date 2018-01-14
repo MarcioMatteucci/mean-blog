@@ -3,7 +3,7 @@ const jwtService = require('../services/jwt.service');
 
 module.exports = {
 
-   /*====================
+   /*=====================
    Crear una cuenta nueva
    =====================*/
    signUp: async (req, res) => {
