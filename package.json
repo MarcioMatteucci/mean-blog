@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "net start MongoDB && nodemon server.js"
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -24,8 +24,9 @@
   },
   "homepage": "https://github.com/MarcioMatteucci/mean-blog#readme",
   "devDependencies": {
+    "dotenv": "^4.0.0",
     "morgan": "^1.9.0",
-    "nodemon": "^1.12.1"
+    "nodemon": "^1.14.11"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

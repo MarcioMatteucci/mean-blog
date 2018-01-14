@@ -1,4 +1,4 @@
-const jwt = require('../services/jwt');
+const jwtService = require('../services/jwt.service');
 
 module.exports = {
       isAuth: async (req, res, next) => {
@@ -7,7 +7,7 @@ module.exports = {
             const token = await req.headers.authorization.split(" ")[1];
 
             // Pasa el token y ve como se resuelve la promesa
-            await jwt.verifyToken(token)
+            await jwtService.verifyToken(token)
                   .then(response => {
                         req.user = response;
                         next()
@@ -21,7 +21,7 @@ module.exports = {
 
             const token = await req.headers.authorization.split(" ")[1];
 
-            await jwt.verifyAdminToken(token)
+            await jwtService.verifyAdminToken(token)
                   .then(response => {
                         req.user = response;
                         next()

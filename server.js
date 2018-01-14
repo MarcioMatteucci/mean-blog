@@ -1,18 +1,21 @@
 // 3rd party Modules
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 
 // Custom files
 const app = require('./api/app');
-const config = require('./config/config');
+
+// Variables de entorno
+dotenv.config();
 
 // Mongoose
 mongoose.Promise = global.Promise;
-mongoose.connect(config.localDbUri, { useMongoClient: true }).then(
-   () => { console.log('Conexion a la db: ' + config.localDbUri); },
+mongoose.connect(process.env.LOCALDB_URI, { useMongoClient: true }).then(
+   () => { console.log('Conexion a la db: ' + process.env.LOCALDB_URI); },
    (err) => { console.log('Error al conectar a la db: ' + err); }
 );
 
 // Start server
-app.listen(config.port, () => {
-   console.log(`Server escuchando en el puerto ${config.port}`);
+app.listen(process.env.PORT, () => {
+   console.log(`Server escuchando en el puerto ${process.env.PORT}`);
 });

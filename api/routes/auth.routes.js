@@ -2,8 +2,8 @@ const router = require('express').Router();
 const { check, validationResult, query } = require('express-validator/check');
 const { sanitize } = require('express-validator/filter');
 
-const usersController = require('../controllers/usersController');
-const auth = require('../middlewares/authMiddleware');
+const usersController = require('../controllers/users.controller');
+const auth = require('../middlewares/auth.middleware');
 
 function checkErrors(req, res, next) {
    const errors = validationResult(req);

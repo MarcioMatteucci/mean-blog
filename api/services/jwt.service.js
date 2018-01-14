@@ -1,7 +1,5 @@
-const JWT = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const moment = require('moment');
-
-const { JWT_SECRET } = require('../../config/config');
 
 module.exports = {
    signToken: (user) => {
@@ -13,13 +11,13 @@ module.exports = {
          exp: moment().add(1, 'days').unix() // 1 dia hasta que expire el token
       }
 
-      return { token: JWT.sign(payload, JWT_SECRET), exp: payload.exp };
+      return { token: jwt.sign(payload, process.env.JWT_SECRET), exp: payload.exp };
    },
 
    verifyToken: (token) => {
-      const decoded = new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
          try {
-            const payload = JWT.decode(token, JWT_SECRET);
+            const payload = jwt.decode(token, process.env.JWT_SECRET);
 
             if (payload.exp <= moment().unix()) {
                reject({
@@ -36,14 +34,12 @@ module.exports = {
             });
          }
       });
-
-      return decoded
    },
 
    verifyAdminToken: (token) => {
-      const decoded = new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
          try {
-            const payload = JWT.decode(token, JWT_SECRET);
+            const payload = jwt.decode(token, process.env.JWT_SECRET);
 
             if (payload.exp <= moment().unix()) {
                reject({
@@ -67,8 +63,5 @@ module.exports = {
             });
          }
       });
-
-      return decoded
-
    }
 }

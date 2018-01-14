@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 
 // Custom files
-const routes = require('./routes');
+const routes = require('./routes/index.routes');
 
 // Express
 const app = express();

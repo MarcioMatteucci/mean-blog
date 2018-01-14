@@ -1,5 +1,5 @@
-const User = require('../models/userModel');
-const jwt = require('../services/jwt');
+const User = require('../models/user.model');
+const jwtService = require('../services/jwt.service');
 
 module.exports = {
 
@@ -29,7 +29,7 @@ module.exports = {
     // Persistencia del nuevo usuario
     await newUser.save()
       .then(async (user) => {
-        const tokenInfo = await jwt.signToken(user);
+        const tokenInfo = await jwtService.signToken(user);
         return res.status(201).json({ msg: 'Usuario creado', user, tokenInfo });
       })
       .catch(async (err) => {
@@ -60,7 +60,7 @@ module.exports = {
             return res.status(404).json({ msg: 'Nombre de usuario y/o contraseña incorrectos' });
           }
 
-          const token = await jwt.signToken(user);
+          const token = await jwtService.signToken(user);
 
           res.status(200).json({ msg: 'Login satisfactorio', token });
         }

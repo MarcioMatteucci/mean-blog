@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { header, validationResult } = require('express-validator/check');
 
-const auth = require('../middlewares/authMiddleware');
+const auth = require('../middlewares/auth.middleware');
 
 function checkErrors(req, res, next) {
    const errors = validationResult(req);
