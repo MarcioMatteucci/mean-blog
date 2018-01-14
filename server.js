@@ -1,12 +1,11 @@
 // 3rd party Modules
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 
 // Custom files
 const app = require('./api/app');
 
-// Variables de entorno
-dotenv.config();
+// Environment
+require('dotenv').config();
 
 // Mongoose
 mongoose.Promise = global.Promise;
@@ -16,6 +15,7 @@ mongoose.connect(process.env.LOCALDB_URI, { useMongoClient: true }).then(
 );
 
 // Start server
-app.listen(process.env.PORT, () => {
-   console.log(`Server escuchando en el puerto ${process.env.PORT}`);
+const port = process.env.PORT || 3000
+app.listen(port, () => {
+   console.log(`Server escuchando en el puerto ${port}`);
 });
