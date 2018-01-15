@@ -9,7 +9,7 @@ module.exports = {
       // Pasa el token y ve como se resuelve la promesa
       await jwtService.verifyToken(token)
          .then(response => {
-            req.user = response;
+            req.body.user = response;
             next()
          })
          .catch(response => {

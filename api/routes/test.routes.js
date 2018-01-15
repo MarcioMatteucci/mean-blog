@@ -16,7 +16,7 @@ function checkErrors(req, res, next) {
 router.get('/user', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty()
 ], checkErrors, auth.isAuth, (req, res) => {
-   res.status(200).json({ success: true, msg: 'Accediste a una ruta con rol de user' });
+   res.status(200).json({ success: true, msg: 'Accediste a una ruta con rol de user', user: req.body.user });
 });
 
 router.get('/admin', [
