@@ -37,4 +37,14 @@ router.post('/', [
    check('body', 'El contenido debe entre 3 caracteres mínimo').isLength({ min: 3 })
 ], checkErrors, auth.isAuth, PostsController.createPost);
 
+// Darle like al post
+router.post('/:id/like', [
+   param('id', 'No es un ID de post válido').isMongoId()
+], checkErrors, auth.isAuth, PostsController.likePost);
+
+// Darle dislike al post
+router.post('/:id/dislike', [
+   param('id', 'No es un ID de post válido').isMongoId()
+], checkErrors, auth.isAuth, PostsController.dislikePost);
+
 module.exports = router;
