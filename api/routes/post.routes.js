@@ -47,4 +47,22 @@ router.post('/:id/dislike', [
    param('id', 'No es un ID de post válido').isMongoId()
 ], checkErrors, auth.isAuth, PostsController.dislikePost);
 
+// Actualizar un post
+router.patch('/:id', [
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
+   sanitize('title').trim(),
+   sanitize('title').escape(),
+   check('title', 'El título es requerido').exists(),
+   check('title', 'El título debe entre 3 y 50 caracteres').isLength({ min: 3, max: 50 }),
+   sanitize('body').trim(),
+   sanitize('body').escape(),
+   check('body', 'El contenido es requerido').exists(),
+   check('body', 'El contenido debe entre 3 caracteres mínimo').isLength({ min: 3 })
+], checkErrors, auth.isAuth, PostsController.updatePost);
+
+// Eliminar un post
+router.delete('/:id', [
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty()
+], checkErrors, auth.isAuth, PostsController.deletePost);
+
 module.exports = router;

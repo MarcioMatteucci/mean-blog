@@ -34,7 +34,7 @@ module.exports = {
          })
          .catch(async (err) => {
             console.log(err);
-            return res.status(500).json({ msg: 'Hay un error', error: err });
+            return res.status(500).json({ msg: 'Error al guardar el nuevo usuario', error: err });
          });
 
    },
@@ -66,7 +66,7 @@ module.exports = {
             }
          })
          .catch((err) => {
-            return res.status(500).json({ error: err });
+            return res.status(500).json({ msg: 'Error al obtener el usuario', error: err });
          });
 
    },
@@ -87,7 +87,7 @@ module.exports = {
             }
          })
          .catch((err) => {
-            return res.status(500).json({ error: err });
+            return res.status(500).json({ msg: 'Error al obtener el usuario', error: err });
          });
    },
 
@@ -107,7 +107,7 @@ module.exports = {
             }
          })
          .catch((err) => {
-            return res.status(500).json({ error: err });
+            return res.status(500).json({ msg: 'Error al obtener el usuario', error: err });
          });
 
    }
