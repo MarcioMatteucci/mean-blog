@@ -13,18 +13,6 @@ const postSchema = new Schema({
    comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }]
 }, { timestamps: true });
 
-// const autoPopulateUsername = function (next) {
-//    this.populate('user', 'username');
-//    this.populate('likedBy', 'username');
-//    this.populate('dislikedBy', 'username');
-//    next();
-// };
-
-// postSchema
-//    .pre('find', autoPopulateUsername)
-//    .pre('findOne', autoPopulateUsername)
-//    .pre('findById', autoPopulateUsername)
-
 const Post = mongoose.model('post', postSchema);
 
 module.exports = Post;

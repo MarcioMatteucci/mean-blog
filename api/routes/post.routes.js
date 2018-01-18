@@ -5,12 +5,13 @@ const { sanitize } = require('express-validator/filter');
 const auth = require('../middlewares/auth.middleware');
 
 const PostsController = require('../controllers/posts.controller');
+const CommentsController = require('../controllers/comments.controller');
 
 function checkErrors(req, res, next) {
    const errors = validationResult(req);
 
    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.arrary() });
+      return res.status(422).json({ errors: errors.array() });
    }
 
    next();
@@ -34,7 +35,7 @@ router.post('/', [
    sanitize('body').trim(),
    sanitize('body').escape(),
    check('body', 'El contenido es requerido').exists(),
-   check('body', 'El contenido debe entre 3 caracteres mínimo').isLength({ min: 3 })
+   check('body', 'El contenido debe tener 3 caracteres mínimo').isLength({ min: 3 })
 ], checkErrors, auth.isAuth, PostsController.createPost);
 
 // Darle like al post
@@ -57,12 +58,27 @@ router.patch('/:id', [
    sanitize('body').trim(),
    sanitize('body').escape(),
    check('body', 'El contenido es requerido').exists(),
-   check('body', 'El contenido debe entre 3 caracteres mínimo').isLength({ min: 3 })
+   check('body', 'El contenido debe tener 3 caracteres mínimo').isLength({ min: 3 })
 ], checkErrors, auth.isAuth, PostsController.updatePost);
 
 // Eliminar un post
 router.delete('/:id', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty()
 ], checkErrors, auth.isAuth, PostsController.deletePost);
+
+/*==========
+Comentarios
+===========*/
+// Crear un comentario en un post
+router.post('/:id/comment', [
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
+   sanitize('comment').trim(),
+   sanitize('comment').escape(),
+   check('comment', 'El comentario es requerido').exists(),
+   check('comment', 'El comentario debe tener 3 caracteres mínimo').isLength({ min: 3 })
+], checkErrors, auth.isAuth, CommentsController.createComment);
+
+// Todos los comentarios de un post
+router.get('/:id/comment', CommentsController.getCommentsByPost)
 
 module.exports = router;
