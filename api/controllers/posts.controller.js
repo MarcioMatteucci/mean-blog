@@ -91,9 +91,6 @@ module.exports = {
       const userId = req.body.userId;
 
       await Post.findById(postId)
-         .populate('user', 'username')
-         .populate('likedBy', 'username')
-         .populate('dislikedBy', 'username')
          .exec()
          .then(async (post) => {
 
@@ -101,7 +98,7 @@ module.exports = {
                return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
             } else {
 
-               let userIdFromPost = post.user._id.toString();
+               let userIdFromPost = post.user.toString();
                let userIdFromToken = userId;
 
                // Valido que no sea un post del usuario
@@ -110,8 +107,8 @@ module.exports = {
                }
 
                // Creo arrays con todos los usuarios que ya le dieron like y dislike
-               let usersWhoLike = post.likedBy.map(user => user._id.toString());
-               let usersWhoDislike = post.dislikedBy.map(user => user._id.toString());
+               let usersWhoLike = post.likedBy.map(user => user.toString());
+               let usersWhoDislike = post.dislikedBy.map(user => user.toString());
 
                // Valido que no le haya dado like aun
                if (usersWhoLike.indexOf(userIdFromToken) !== -1) {
@@ -137,7 +134,7 @@ module.exports = {
                         .populate('dislikedBy', 'username')
                         .exec()
                         .then((post) => {
-                           res.status(201).json({ msg: 'Has dado like', post })
+                           res.status(200).json({ msg: 'Has dado like', post })
 
                         })
                         .catch((err) => {
@@ -166,9 +163,6 @@ module.exports = {
       const userId = req.body.userId;
 
       await Post.findById(postId)
-         .populate('user', 'username')
-         .populate('likedBy', 'username')
-         .populate('dislikedBy', 'username')
          .exec()
          .then(async (post) => {
 
@@ -176,7 +170,7 @@ module.exports = {
                return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
             } else {
 
-               let userIdFromPost = post.user._id.toString();
+               let userIdFromPost = post.user.toString();
                let userIdFromToken = userId;
 
                // Valido que no sea un post del usuario
@@ -185,8 +179,8 @@ module.exports = {
                }
 
                // Creo arrays con todos los usuarios que ya le dieron like y dislike
-               let usersWhoLike = post.likedBy.map(user => user._id.toString());
-               let usersWhoDislike = post.dislikedBy.map(user => user._id.toString());
+               let usersWhoLike = post.likedBy.map(user => user.toString());
+               let usersWhoDislike = post.dislikedBy.map(user => user.toString());
 
                // Valido que no le haya dado dislike aun
                if (usersWhoDislike.indexOf(userIdFromToken) !== -1) {
@@ -212,7 +206,7 @@ module.exports = {
                         .populate('dislikedBy', 'username')
                         .exec()
                         .then((post) => {
-                           res.status(201).json({ msg: 'Has dado dislike', post })
+                           res.status(200).json({ msg: 'Has dado dislike', post })
 
                         })
                         .catch((err) => {
