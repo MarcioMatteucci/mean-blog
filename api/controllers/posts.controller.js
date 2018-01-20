@@ -12,6 +12,13 @@ module.exports = {
          .populate('user', 'username')
          .populate('likedBy', 'username')
          .populate('dislikedBy', 'username')
+         .populate({
+            path: 'comments',
+            populate: {
+               path: 'user',
+               select: 'username'
+            }
+         })
          .sort({ createdAt: 'asc' })
          .exec()
          .then((posts) => {
@@ -34,6 +41,13 @@ module.exports = {
          .populate('user', 'username')
          .populate('likedBy', 'username')
          .populate('dislikedBy', 'username')
+         .populate({
+            path: 'comments',
+            populate: {
+               path: 'user',
+               select: 'username'
+            }
+         })
          .exec()
          .then((post) => {
             if (!post) {
@@ -98,8 +112,8 @@ module.exports = {
                return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
             } else {
 
-               let userIdFromPost = post.user.toString();
-               let userIdFromToken = userId;
+               const userIdFromPost = post.user.toString();
+               const userIdFromToken = userId;
 
                // Valido que no sea un post del usuario
                if (userIdFromPost === userIdFromToken) {
@@ -107,8 +121,8 @@ module.exports = {
                }
 
                // Creo arrays con todos los usuarios que ya le dieron like y dislike
-               let usersWhoLike = post.likedBy.map(user => user.toString());
-               let usersWhoDislike = post.dislikedBy.map(user => user.toString());
+               const usersWhoLike = post.likedBy.map(user => user.toString());
+               const usersWhoDislike = post.dislikedBy.map(user => user.toString());
 
                // Valido que no le haya dado like aun
                if (usersWhoLike.indexOf(userIdFromToken) !== -1) {
@@ -116,7 +130,7 @@ module.exports = {
                }
 
                // Elimino el dislike del usuario si lo habia dado
-               let index = usersWhoDislike.indexOf(userIdFromToken);
+               const index = usersWhoDislike.indexOf(userIdFromToken);
 
                if (index !== -1) {
                   await post.set({ dislikes: post.dislikes -= 1 });
@@ -132,6 +146,13 @@ module.exports = {
                         .populate('user', 'username')
                         .populate('likedBy', 'username')
                         .populate('dislikedBy', 'username')
+                        .populate({
+                           path: 'comments',
+                           populate: {
+                              path: 'user',
+                              select: 'username'
+                           }
+                        })
                         .exec()
                         .then((post) => {
                            res.status(200).json({ msg: 'Has dado like', post })
@@ -170,8 +191,8 @@ module.exports = {
                return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
             } else {
 
-               let userIdFromPost = post.user.toString();
-               let userIdFromToken = userId;
+               const userIdFromPost = post.user.toString();
+               const userIdFromToken = userId;
 
                // Valido que no sea un post del usuario
                if (userIdFromPost === userIdFromToken) {
@@ -179,8 +200,8 @@ module.exports = {
                }
 
                // Creo arrays con todos los usuarios que ya le dieron like y dislike
-               let usersWhoLike = post.likedBy.map(user => user.toString());
-               let usersWhoDislike = post.dislikedBy.map(user => user.toString());
+               const usersWhoLike = post.likedBy.map(user => user.toString());
+               const usersWhoDislike = post.dislikedBy.map(user => user.toString());
 
                // Valido que no le haya dado dislike aun
                if (usersWhoDislike.indexOf(userIdFromToken) !== -1) {
@@ -188,7 +209,7 @@ module.exports = {
                }
 
                // Elimino el like del usuario si lo habia dado
-               let index = usersWhoLike.indexOf(userIdFromToken);
+               const index = usersWhoLike.indexOf(userIdFromToken);
 
                if (index !== -1) {
                   await post.set({ likes: post.likes -= 1 });
@@ -204,6 +225,13 @@ module.exports = {
                         .populate('user', 'username')
                         .populate('likedBy', 'username')
                         .populate('dislikedBy', 'username')
+                        .populate({
+                           path: 'comments',
+                           populate: {
+                              path: 'user',
+                              select: 'username'
+                           }
+                        })
                         .exec()
                         .then((post) => {
                            res.status(200).json({ msg: 'Has dado dislike', post })
@@ -243,15 +271,15 @@ module.exports = {
             } else {
 
                // Valido que el usuario sea el creador del post
-               let userIdFromPost = post.user.toString();
-               let userIdFromToken = userId;
+               const userIdFromPost = post.user.toString();
+               const userIdFromToken = userId;
 
                if (userIdFromPost !== userIdFromToken) {
                   return res.status(403).json({ msg: 'No puedes editar un post que no has creado' });
                }
 
-               let newTitle = await req.body.title;
-               let newBody = await req.body.body;
+               const newTitle = await req.body.title;
+               const newBody = await req.body.body;
 
                post.title = newTitle;
                post.body = newBody;
@@ -259,6 +287,16 @@ module.exports = {
                await post.save()
                   .then((post) => {
                      Post.findOne(post)
+                        .populate('user', 'username')
+                        .populate('likedBy', 'username')
+                        .populate('dislikedBy', 'username')
+                        .populate({
+                           path: 'comments',
+                           populate: {
+                              path: 'user',
+                              select: 'username'
+                           }
+                        })
                         .exec()
                         .then((post) => {
                            res.status(200).json({ msg: 'Post actualizado', post });
@@ -294,8 +332,8 @@ module.exports = {
             } else {
 
                // Valido que el usuario sea el creador del post
-               let userIdFromPost = post.user.toString();
-               let userIdFromToken = userId;
+               const userIdFromPost = post.user.toString();
+               const userIdFromToken = userId;
 
                if (userIdFromPost !== userIdFromToken) {
                   return res.status(403).json({ msg: 'No puedes eliminar un post que no has creado' });

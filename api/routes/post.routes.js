@@ -81,4 +81,9 @@ router.post('/:id/comment', [
 // Todos los comentarios de un post
 router.get('/:id/comment', CommentsController.getCommentsByPost)
 
+// Eliminar un comentario de un post
+router.delete('/:postId/comment/:commentId', [
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty()
+], checkErrors, auth.isAuth, CommentsController.deleteComment)
+
 module.exports = router;
