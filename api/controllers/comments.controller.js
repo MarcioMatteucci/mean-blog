@@ -5,6 +5,31 @@ const User = require('../models/user.model');
 module.exports = {
 
    /*==============================
+   Obtener comentario por su id
+   ==============================*/
+   getCommentById: async (req, res) => {
+
+      const id = await req.params.id;
+
+      await Comment.findById(id)
+         .populate('user', 'username')
+         .populate('likedBy', 'username')
+         .populate('dislikedBy', 'username')
+         .exec()
+         .then((comment) => {
+            if (!comment) {
+               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
+            }
+
+            res.status(200).json({ comment });
+         })
+         .catch((err) => {
+            console.log(err);
+            res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
+         });
+   },
+
+   /*==============================
    Todos los comentarios de un post
    ==============================*/
    getCommentsByPost: async (req, res) => {
@@ -81,6 +106,201 @@ module.exports = {
          .catch((err) => {
             console.log(err);
             res.status(500).json({ msg: 'Error al obtener el post', error: err });
+         });
+   },
+
+   /*=========================
+   Darle like a un Comentario
+   =========================*/
+   likeComment: async (req, res) => {
+
+      const commentId = await req.params.id;
+
+      await Comment.findById(commentId)
+         .exec()
+         .then(async (comment) => {
+
+            if (!comment) {
+               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
+            } else {
+
+               const userIdFromComment = await comment.user.toString();
+               const userIdFromToken = await req.body.userId;
+
+               // Valido que no sea un comentario del usuario
+               if (userIdFromComment === userIdFromToken) {
+                  return res.status(403).json({ msg: 'No puedes darle like a tu propio comentario' });
+               }
+
+               // Creo arrays con todos los usuarios que ya le dieron like y dislike
+               const usersWhoLike = comment.likedBy.map(user => user.toString());
+               const usersWhoDislike = comment.dislikedBy.map(user => user.toString());
+
+               // Valido que no le haya dado like aun
+               if (usersWhoLike.indexOf(userIdFromToken) !== -1) {
+                  return res.status(403).json({ msg: 'Ya le has dado like' });
+               }
+
+               // Elimino el dislike del usuario si lo habia dado
+               const index = usersWhoDislike.indexOf(userIdFromToken);
+
+               if (index !== -1) {
+                  await comment.set({ dislikes: comment.dislikes -= 1 });
+                  await comment.dislikedBy.splice(index, 1);
+               }
+
+               // Persisto el like
+               await comment.likedBy.push(userIdFromToken);
+               await comment.set({ likes: comment.likes += 1 });
+               await comment.save()
+                  .then((comment) => {
+                     Comment.findOne(comment)
+                        .populate('user', 'username')
+                        .populate('likedBy', 'username')
+                        .populate('dislikedBy', 'username')
+                        .exec()
+                        .then((comment) => {
+                           res.status(200).json({ msg: 'Has dado like', comment })
+
+                        })
+                        .catch((err) => {
+                           console.log(err);
+                           res.status(500).json({ msg: 'Error al obtener el comentario que se ha dado like', error: err });
+                        });
+                  })
+                  .catch((err) => {
+                     console.log(err);
+                     res.status(500).json({ msg: 'Error al guardar el like en el comentario', error: err });
+                  });
+            }
+         })
+         .catch((err) => {
+            console.log(err);
+            res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
+         });
+   },
+
+   /*===========================
+   Darle dislike a un Comentario
+   ============================*/
+   dislikeComment: async (req, res) => {
+
+      const commentId = await req.params.id;
+
+      await Comment.findById(commentId)
+         .exec()
+         .then(async (comment) => {
+
+            if (!comment) {
+               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
+            } else {
+
+               const userIdFromComment = await comment.user.toString();
+               const userIdFromToken = await req.body.userId;
+
+               // Valido que no sea un comentario del usuario
+               if (userIdFromComment === userIdFromToken) {
+                  return res.status(403).json({ msg: 'No puedes darle dislike a tu propio comentario' });
+               }
+
+               // Creo arrays con todos los usuarios que ya le dieron like y dislike
+               const usersWhoLike = comment.likedBy.map(user => user.toString());
+               const usersWhoDislike = comment.dislikedBy.map(user => user.toString());
+
+               // Valido que no le haya dado dislike aun
+               if (usersWhoDislike.indexOf(userIdFromToken) !== -1) {
+                  return res.status(403).json({ msg: 'Ya le has dado dislike' });
+               }
+
+               // Elimino el like del usuario si lo habia dado
+               const index = usersWhoLike.indexOf(userIdFromToken);
+
+               if (index !== -1) {
+                  await comment.set({ likes: comment.likes -= 1 });
+                  await comment.likedBy.splice(index, 1);
+               }
+
+               // Persisto el like
+               await comment.dislikedBy.push(userIdFromToken);
+               await comment.set({ dislikes: comment.dislikes += 1 });
+               await comment.save()
+                  .then((comment) => {
+                     Comment.findOne(comment)
+                        .populate('user', 'username')
+                        .populate('likedBy', 'username')
+                        .populate('dislikedBy', 'username')
+                        .exec()
+                        .then((comment) => {
+                           res.status(200).json({ msg: 'Has dado dislike', comment })
+
+                        })
+                        .catch((err) => {
+                           console.log(err);
+                           res.status(500).json({ msg: 'Error al obtener el comentario que se ha dado dislike', error: err });
+                        });
+                  })
+                  .catch((err) => {
+                     console.log(err);
+                     res.status(500).json({ msg: 'Error al guardar el dislike en el comentario', error: err });
+                  });
+            }
+         })
+         .catch((err) => {
+            console.log(err);
+            res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
+         });
+   },
+
+   /*=======================
+   Actualizar un comentario
+   ========================*/
+   updateComment: async (req, res) => {
+
+      const id = await req.params.id;
+
+      await Comment.findById(id)
+         .exec()
+         .then(async (comment) => {
+            if (!comment) {
+               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
+            } else {
+
+               // Valido que el usuario sea el creador del comentario
+               const userIdFromComment = await comment.user.toString();
+               const userIdFromToken = await req.body.userId;
+
+               if (userIdFromComment !== userIdFromToken) {
+                  return res.status(403).json({ msg: 'No puedes editar un comentario que no has creado' });
+               }
+
+               const newComment = await req.body.comment;
+
+               comment.comment = newComment;
+
+               await comment.save()
+                  .then(async (comment) => {
+                     await Comment.findOne(comment)
+                        .populate('user', 'username')
+                        .populate('likedBy', 'username')
+                        .populate('dislikedBy', 'username')
+                        .exec()
+                        .then((comment) => {
+                           res.status(200).json({ msg: 'Comentario actualizado', comment });
+                        })
+                        .catch((err) => {
+                           console.log(err);
+                           res.status(500).json({ msg: 'Error al obtener el comentario actualizado', error: err });
+                        });
+                  })
+                  .catch((err) => {
+                     console.log(err);
+                     res.status(500).json({ msg: 'Error al guardar el comentario actualizado', error: err });
+                  });
+            }
+         })
+         .catch((err) => {
+            console.log(err);
+            res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
          });
    },
 

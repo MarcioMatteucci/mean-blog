@@ -40,17 +40,20 @@ router.post('/', [
 
 // Darle like al post
 router.post('/:id/like', [
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
    param('id', 'No es un ID de post válido').isMongoId()
 ], checkErrors, auth.isAuth, PostsController.likePost);
 
 // Darle dislike al post
 router.post('/:id/dislike', [
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
    param('id', 'No es un ID de post válido').isMongoId()
 ], checkErrors, auth.isAuth, PostsController.dislikePost);
 
 // Actualizar un post
 router.patch('/:id', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
+   param('id', 'No es un ID de post válido').isMongoId(),
    sanitize('title').trim(),
    sanitize('title').escape(),
    check('title', 'El título es requerido').exists(),
@@ -63,15 +66,18 @@ router.patch('/:id', [
 
 // Eliminar un post
 router.delete('/:id', [
-   header('Authorization', 'Se debe proveer un Token').not().isEmpty()
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
+   param('id', 'No es un ID de post válido').isMongoId()
 ], checkErrors, auth.isAuth, PostsController.deletePost);
 
-/*==========
-Comentarios
-===========*/
+/*=======================
+Rutas de comentarios que
+dependen de un post 
+========================*/
 // Crear un comentario en un post
 router.post('/:id/comment', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
+   param('id', 'No es un ID de post válido').isMongoId(),
    sanitize('comment').trim(),
    sanitize('comment').escape(),
    check('comment', 'El comentario es requerido').exists(),
@@ -79,11 +85,15 @@ router.post('/:id/comment', [
 ], checkErrors, auth.isAuth, CommentsController.createComment);
 
 // Todos los comentarios de un post
-router.get('/:id/comment', CommentsController.getCommentsByPost)
+router.get('/:id/comment', [
+   param('id', 'No es un ID de post válido').isMongoId()
+], checkErrors, CommentsController.getCommentsByPost)
 
-// Eliminar un comentario de un post
+// Eliminar un comentario de un post y de la coleccion de comentarios
 router.delete('/:postId/comment/:commentId', [
-   header('Authorization', 'Se debe proveer un Token').not().isEmpty()
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
+   param('postId', 'No es un ID de post válido').isMongoId(),
+   param('commentId', 'No es un ID de comentario válido').isMongoId()
 ], checkErrors, auth.isAuth, CommentsController.deleteComment)
 
 module.exports = router;

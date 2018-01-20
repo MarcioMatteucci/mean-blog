@@ -8,7 +8,7 @@ const commentSchema = new Schema({
    likes: { type: Number, default: 0 },
    dislikes: { type: Number, default: 0 },
    likedBy: [{ type: Schema.Types.ObjectId, ref: 'user' }],
-   dislkedBy: [{ type: Schema.Types.ObjectId, ref: 'user' }]
+   dislikedBy: [{ type: Schema.Types.ObjectId, ref: 'user' }]
 }, { timestamps: true });
 
 const Comment = mongoose.model('comment', commentSchema);
