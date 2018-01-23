@@ -1,198 +1,206 @@
 <form [formGroup]="signUpForm" novalidate>
 
-  <!-- Seccion de la info de logeo -->
-  <div class="login-info mt-3">
-    <h2>Información de Sesión:</h2>
-    <hr>
+   <!-- Seccion de la info de logeo -->
+   <div class="login-info mt-3">
+      <h2>Información de Sesión:</h2>
+      <hr>
 
-    <div class="form-group">
+      <div class="form-group">
 
-      <label class="form-control-label">
-        <strong>Nombre de Usuario:</strong>
-      </label>
+         <label class="form-control-label">
+            <strong>Nombre de Usuario:</strong>
+         </label>
 
-      <div class="input-group">
+         <div class="input-group">
 
-        <span class="input-group-addon">
-          <i class="fa fa-user" aria-hidden="true"></i>
-        </span>
+            <div class="input-group-prepend">
+               <span class="input-group-text">
+                  <i class="fa fa-user" aria-hidden="true"></i>
+               </span>
+            </div>
 
-        <input [ngClass]="{ 'is-invalid': (username.errors && username.dirty) || (!usernameValid && username.dirty), 'is-valid': username.valid && usernameValid }"
-          class="form-control" type="text" placeholder="Ingrese un nombre de usuario..." formControlName="username" (keyup)="checkUsername()">
+            <input [ngClass]="{ 'is-invalid': username.invalid && (username.dirty || username.touched), 'is-valid': username.valid && (username.dirty || username.touched) }"
+               class="form-control" type="text" placeholder="Ingrese un nombre de usuario..." formControlName="username">
 
-      </div>
+            <div class="invalid-feedback ml-5" *ngIf="(username.errors && username.dirty) || (!usernameValid && username.dirty)">
+               <p *ngIf="username.hasError('required')">El campo es requerido.</p>
+               <p *ngIf="username.hasError('minlength') || username.hasError('maxlength')">El campo debe tener entre 3 y 50 caracteres.</p>
+               <p *ngIf="username.hasError('usernameTaken') && !username.hasError('required')">El nombre de usuario esta en uso.</p>
+            </div>
 
-      <div class="invalid-feedback d-flex ml-5" *ngIf="(username.errors && username.dirty) || (!usernameValid && username.dirty)">
-        <p *ngIf="username.hasError('required')">El campo es requerido.</p>
-        <p *ngIf="username.hasError('minlength') || username.hasError('maxlength')">El campo debe tener entre 3 y 50 caracteres.</p>
-        <p *ngIf="usernameMessage && !usernameValid && !username.hasError('required')">{{ usernameMessage }}</p>
-      </div>
-
-    </div>
-
-    <div class="form-row">
-
-      <div class="col">
-        <div class="form-group">
-          <label class="form-control-label">
-            <strong>Contraseña:</strong>
-          </label>
-
-          <div class="input-group">
-
-            <span class="input-group-addon">
-              <i class="fa fa-lock" aria-hidden="true"></i>
-            </span>
-
-            <input [ngClass]="{ 'is-invalid': password.invalid && (password.dirty || password.touched), 'is-valid': password.valid && (password.dirty || password.touched) }"
-              type="password" class="form-control" autocomplete="off" placeholder="de 6 a 30 caracteres alfanuméricos." formControlName="password">
-
-          </div>
-
-          <div class="invalid-feedback d-flex ml-5" *ngIf="password.invalid && (password.dirty || password.touched)">
-            <p *ngIf="password.hasError('required')">El campo es requerido.</p>
-            <p *ngIf="password.hasError('minlength') || password.hasError('maxlength')">El campo debe tener entre 6 y 30 caracteres.</p>
-            <p *ngIf="password.hasError('pattern') && !(password.hasError('required') || password.hasError('minlength') || password.hasError('maxlength'))">No se permiten caracteres especiales. Solo números y/o letras.</p>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="form-group">
-
-          <label class="form-control-label">
-            <strong>Confirmar Contraseña:</strong>
-          </label>
-
-          <div class="input-group">
-
-            <span class="input-group-addon">
-              <i class="fa fa-lock" aria-hidden="true"></i>
-            </span>
-
-            <input [ngClass]="{ 'is-invalid': signUpForm.hasError('passwordsDontMatch') && (confirmPassword.dirty || confirmPassword.touched) || password.invalid && (password.dirty || password.touched), 'is-valid': !signUpForm.hasError('passwordsDontMatch') && (confirmPassword.valid && (confirmPassword.dirty || confirmPassword.touched)) }"
-              type="password" class="form-control" autocomplete="off" placeholder="Confirme su contraseña..." formControlName="confirmPassword">
-          </div>
-
-          <div class="invalid-feedback d-flex ml-5" *ngIf="signUpForm.hasError('passwordsDontMatch') && (confirmPassword.dirty || confirmPassword.touched)">
-            <p *ngIf="signUpForm.hasError('passwordsDontMatch')">Las contraseñas no coinciden.</p>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <br>
-
-  <!-- Seccion de la info personal -->
-  <div class="personal-info">
-    <h2>Información Personal:</h2>
-    <hr>
-
-
-
-    <div class="form-group">
-
-      <label class="form-control-label">
-        <strong>Email:</strong>
-      </label>
-
-      <div class="input-group">
-
-        <span class="input-group-addon">
-          <i class="fa fa-at" aria-hidden="true"></i>
-        </span>
-
-        <input [ngClass]="{ 'is-invalid': (email.errors && email.dirty) || (!emailValid && email.dirty), 'is-valid': email.valid && emailValid }"
-          class="form-control" type="text" placeholder="Ingrese su email..." formControlName="email" (keyup)="checkEmail()">
+         </div>
 
       </div>
 
-      <div class="invalid-feedback d-flex ml-5" *ngIf="(email.errors && email.dirty) || (!emailValid && email.dirty)">
-        <p *ngIf="email.hasError('required')">El campo es requerido.</p>
-        <p *ngIf="email.hasError('email') && !email.hasError('required')">No es un formato de mail válido.</p>
-        <p *ngIf="emailMessage && !emailValid && !email.hasError('email') && !email.hasError('required')">{{ emailMessage }}</p>
+      <div class="form-row">
+
+         <div class="col">
+            <div class="form-group">
+               <label class="form-control-label">
+                  <strong>Contraseña:</strong>
+               </label>
+
+               <div class="input-group">
+
+                  <div class="input-group-prepend">
+                     <span class="input-group-text">
+                        <i class="fa fa-lock" aria-hidden="true"></i>
+                     </span>
+                  </div>
+
+                  <input [ngClass]="{ 'is-invalid': password.invalid && (password.dirty || password.touched), 'is-valid': password.valid && (password.dirty || password.touched) }"
+                     type="password" class="form-control" autocomplete="off" placeholder="de 6 a 30 caracteres alfanuméricos."
+                     formControlName="password">
+
+                  <div class="invalid-feedback d-flex ml-5" *ngIf="password.invalid && (password.dirty || password.touched)">
+                     <p *ngIf="password.hasError('required')">El campo es requerido.</p>
+                     <p *ngIf="password.hasError('minlength') || password.hasError('maxlength')">El campo debe tener entre 6 y 30 caracteres.</p>
+                     <p *ngIf="password.hasError('pattern') && !(password.hasError('required') || password.hasError('minlength') || password.hasError('maxlength'))">No se permiten caracteres especiales. Solo números y/o letras.</p>
+                  </div>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="col">
+            <div class="form-group">
+
+               <label class="form-control-label">
+                  <strong>Confirmar Contraseña:</strong>
+               </label>
+
+               <div class="input-group">
+
+                  <div class="input-group-prepend">
+                     <span class="input-group-text">
+                        <i class="fa fa-lock" aria-hidden="true"></i>
+                     </span>
+                  </div>
+
+                  <input [ngClass]="{ 'is-invalid': signUpForm.hasError('passwordsDontMatch') && (confirmPassword.dirty || confirmPassword.touched) || password.invalid && (password.dirty || password.touched), 'is-valid': !signUpForm.hasError('passwordsDontMatch') && (confirmPassword.valid && (confirmPassword.dirty || confirmPassword.touched)) }"
+                     type="password" class="form-control" autocomplete="off" placeholder="Confirme su contraseña..." formControlName="confirmPassword">
+
+                  <div class="invalid-feedback d-flex ml-5" *ngIf="signUpForm.hasError('passwordsDontMatch') && (confirmPassword.dirty || confirmPassword.touched)">
+                     <p *ngIf="signUpForm.hasError('passwordsDontMatch')">Las contraseñas no coinciden.</p>
+                  </div>
+
+               </div>
+
+
+            </div>
+         </div>
+
+      </div>
+   </div>
+
+   <br>
+
+   <!-- Seccion de la info personal -->
+   <div class="personal-info">
+      <h2>Información Personal:</h2>
+      <hr>
+
+
+
+      <div class="form-group">
+
+         <label class="form-control-label">
+            <strong>Email:</strong>
+         </label>
+
+         <div class="input-group">
+
+            <div class="input-group-prepend">
+               <span class="input-group-text">
+                  <i class="fa fa-at" aria-hidden="true"></i>
+               </span>
+            </div>
+
+            <input [ngClass]="{ 'is-invalid': email.invalid && (email.dirty || email.touched), 'is-valid': email.valid && (email.dirty || email.touched) }"
+               class="form-control" type="text" placeholder="Ingrese su email..." formControlName="email">
+
+            <div class="invalid-feedback d-flex ml-5" *ngIf="(email.errors && email.dirty) || (!emailValid && email.dirty)">
+               <p *ngIf="email.hasError('required')">El campo es requerido.</p>
+               <p *ngIf="email.hasError('pattern') && !email.hasError('required')">No es un formato de mail válido.</p>
+               <p *ngIf="email.hasError('emailTaken') && !email.hasError('required')">El email esta en uso.</p>
+            </div>
+
+         </div>
+
       </div>
 
-    </div>
+      <div class="form-row">
 
-    <div class="form-row">
+         <div class="col">
+            <div class="form-group">
 
-      <div class="col">
-        <div class="form-group">
+               <label class="form-control-label">
+                  <strong>Nombre:</strong>
+               </label>
 
-          <label class="form-control-label">
-            <strong>Nombre:</strong>
-          </label>
+               <div class="input-group">
 
-          <div class="input-group">
+                  <div class="input-group-prepend">
+                     <span class="input-group-text">
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                     </span>
+                  </div>
 
-            <span class="input-group-addon">
-              <i class="fa fa-user" aria-hidden="true"></i>
-            </span>
+                  <input [ngClass]="{ 'is-invalid': name.invalid && (name.dirty || name.touched), 'is-valid': name.valid && (name.dirty || name.touched) }"
+                     type="text" class="form-control" autocomplete="off" placeholder="Ingrese su nombre..." formControlName="name">
 
-            <input [ngClass]="{ 'is-invalid': name.invalid && (name.dirty || name.touched), 'is-valid': name.valid && (name.dirty || name.touched) }"
-              type="text" class="form-control" autocomplete="off" placeholder="Ingrese su nombre..." formControlName="name">
+                  <div class="invalid-feedback d-flex ml-5" *ngIf="name.invalid && (name.dirty || name.touched)">
+                     <p *ngIf="name.hasError('required')">El campo es requerido.</p>
+                     <p *ngIf="name.hasError('minlength') || name.hasError('maxlength')">El campo debe tener entre 2 y 30 caracteres.</p>
+                  </div>
 
-          </div>
+               </div>
 
-          <div class="invalid-feedback d-flex ml-5" *ngIf="name.invalid && (name.dirty || name.touched)">
-            <p *ngIf="name.hasError('required')">El campo es requerido.</p>
-            <p *ngIf="name.hasError('minlength') || name.hasError('maxlength')">El campo debe tener entre 2 y 30 caracteres.</p>
-          </div>
+            </div>
+         </div>
 
-        </div>
+         <div class="col">
+            <div class="form-group">
+
+               <label class="form-control-label">
+                  <strong>Apellido:</strong>
+               </label>
+
+               <div class="input-group">
+
+                  <div class="input-group-prepend">
+                     <span class="input-group-text">
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                     </span>
+                  </div>
+
+                  <input [ngClass]="{ 'is-invalid': lastname.invalid && (lastname.dirty || lastname.touched), 'is-valid': lastname.valid && (lastname.dirty || lastname.touched) }"
+                     type="text" class="form-control" autocomplete="off" placeholder="Ingrese su apellido" formControlName="lastname">
+
+                  <div class="invalid-feedback d-flex ml-5" *ngIf="lastname.invalid && (lastname.dirty || lastname.touched)">
+                     <p *ngIf="lastname.hasError('required')">El campo es requerido.</p>
+                     <p *ngIf="lastname.hasError('minlength') || lastname.hasError('maxlength')">El campo debe tener entre 2 y 50 caracteres.</p>
+                  </div>
+
+               </div>
+
+            </div>
+         </div>
+
       </div>
 
-      <div class="col">
-        <div class="form-group">
+   </div>
 
-          <label class="form-control-label">
-            <strong>Apellido:</strong>
-          </label>
+   <hr>
 
-          <div class="input-group">
-
-            <span class="input-group-addon">
-              <i class="fa fa-user" aria-hidden="true"></i>
-            </span>
-
-            <input [ngClass]="{ 'is-invalid': lastname.invalid && (lastname.dirty || lastname.touched), 'is-valid': lastname.valid && (lastname.dirty || lastname.touched) }"
-              type="text" class="form-control" autocomplete="off" placeholder="Ingrese su apellido" formControlName="lastname">
-
-          </div>
-
-          <div class="invalid-feedback d-flex ml-5" *ngIf="lastname.invalid && (lastname.dirty || lastname.touched)">
-            <p *ngIf="lastname.hasError('required')">El campo es requerido.</p>
-            <p *ngIf="lastname.hasError('minlength') || lastname.hasError('maxlength')">El campo debe tener entre 2 y 50 caracteres.</p>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-  <hr>
-
-  <div class="row">
-    <button [disabled]="!signUpForm.valid || processing || !emailValid || !usernameValid" type="button" class="btn btn-success ml-3"
-      (click)="signUp()">
-      <i class="fa fa-check" aria-hidden="true"></i>&nbsp;&nbsp;Enviar
-    </button>
-    <button type="button" class="btn btn-primary ml-3" (click)="clearForm()">
-      <i class="fa fa-recycle" aria-hidden="true"></i>&nbsp;&nbsp;Limpiar
-    </button>
-  </div>
-
-
+   <div class="row">
+      <button [disabled]="!signUpForm.valid || processing" type="button" class="btn btn-success ml-3" (click)="signUp()">
+         <i class="fa fa-check" aria-hidden="true"></i>&nbsp;&nbsp;Enviar
+      </button>
+      <button type="button" class="btn btn-primary ml-3" (click)="clearForm()">
+         <i class="fa fa-recycle" aria-hidden="true"></i>&nbsp;&nbsp;Limpiar
+      </button>
+   </div>
 
 </form>
-
-<!-- <div>
-  {{ signUpForm.value | json }}
-</div> -->

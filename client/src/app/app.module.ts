@@ -10,6 +10,9 @@ import { AppRoutingModule } from './app-routing.module';
 // Services
 import { AuthService } from './services/auth.service';
 
+// Validators
+import { SignUpValidators } from './validators/sign-up.validator';
+
 // Components
 import { AppComponent } from './app.component';
 import { SignUpComponent } from './components/sign-up/sign-up.component';
@@ -17,20 +20,21 @@ import { SignUpComponent } from './components/sign-up/sign-up.component';
 
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    SignUpComponent
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    ReactiveFormsModule,
-    FormsModule,
-    HttpClientModule
-  ],
-  providers: [
-    AuthService
-  ],
-  bootstrap: [AppComponent]
+   declarations: [
+      AppComponent,
+      SignUpComponent
+   ],
+   imports: [
+      BrowserModule,
+      AppRoutingModule,
+      ReactiveFormsModule,
+      FormsModule,
+      HttpClientModule
+   ],
+   providers: [
+      AuthService,
+      SignUpValidators
+   ],
+   bootstrap: [AppComponent]
 })
 export class AppModule { }
