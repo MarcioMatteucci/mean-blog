@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { check, header, param, validationResult, query } = require('express-validator/check');
+const { check, body, header, param, validationResult, query } = require('express-validator/check');
 const { sanitize } = require('express-validator/filter');
 
 const auth = require('../middlewares/auth.middleware');
@@ -28,14 +28,12 @@ router.get('/:id', [
 // Crear un nuevo post
 router.post('/', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
-   sanitize('title').trim(),
-   sanitize('title').escape(),
-   check('title', 'El título es requerido').exists(),
-   check('title', 'El título debe entre 3 y 50 caracteres').isLength({ min: 3, max: 50 }),
-   sanitize('body').trim(),
-   sanitize('body').escape(),
-   check('body', 'El contenido es requerido').exists(),
-   check('body', 'El contenido debe tener 3 caracteres mínimo').isLength({ min: 3 })
+   sanitize('title').trim().escape(),
+   body('title', 'El título es requerido').exists(),
+   body('title', 'El título debe entre 3 y 50 caracteres').isLength({ min: 3, max: 50 }),
+   sanitize('body').trim().escape(),
+   body('body', 'El contenido es requerido').exists(),
+   body('body', 'El contenido debe tener 3 caracteres mínimo').isLength({ min: 3 })
 ], checkErrors, auth.isAuth, PostsController.createPost);
 
 // Darle like al post
@@ -54,14 +52,12 @@ router.post('/:id/dislike', [
 router.patch('/:id', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
    param('id', 'No es un ID de post válido').isMongoId(),
-   sanitize('title').trim(),
-   sanitize('title').escape(),
-   check('title', 'El título es requerido').exists(),
-   check('title', 'El título debe entre 3 y 50 caracteres').isLength({ min: 3, max: 50 }),
-   sanitize('body').trim(),
-   sanitize('body').escape(),
-   check('body', 'El contenido es requerido').exists(),
-   check('body', 'El contenido debe tener 3 caracteres mínimo').isLength({ min: 3 })
+   sanitize('title').trim().escape(),
+   body('title', 'El título es requerido').exists(),
+   body('title', 'El título debe entre 3 y 50 caracteres').isLength({ min: 3, max: 50 }),
+   sanitize('body').trim().escape(),
+   body('body', 'El contenido es requerido').exists(),
+   body('body', 'El contenido debe tener 3 caracteres mínimo').isLength({ min: 3 })
 ], checkErrors, auth.isAuth, PostsController.updatePost);
 
 // Eliminar un post
@@ -78,10 +74,9 @@ dependen de un post
 router.post('/:id/comment', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
    param('id', 'No es un ID de post válido').isMongoId(),
-   sanitize('comment').trim(),
-   sanitize('comment').escape(),
-   check('comment', 'El comentario es requerido').exists(),
-   check('comment', 'El comentario debe tener 3 caracteres mínimo').isLength({ min: 3 })
+   sanitize('comment').trim().escape(),
+   body('comment', 'El comentario es requerido').exists(),
+   body('comment', 'El comentario debe tener 3 caracteres mínimo').isLength({ min: 3 })
 ], checkErrors, auth.isAuth, CommentsController.createComment);
 
 // Todos los comentarios de un post

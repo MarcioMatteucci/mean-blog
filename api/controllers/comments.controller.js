@@ -9,24 +9,25 @@ module.exports = {
    ==============================*/
    getCommentById: async (req, res) => {
 
-      const id = await req.params.id;
+      try {
 
-      await Comment.findById(id)
-         .populate('user', 'username')
-         .populate('likedBy', 'username')
-         .populate('dislikedBy', 'username')
-         .exec()
-         .then((comment) => {
-            if (!comment) {
-               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
-            }
+         const comment = await Comment.findById(req.params.id)
+            .populate('user', 'username')
+            .populate('likedBy', 'username')
+            .populate('dislikedBy', 'username')
+            .exec();
 
-            res.status(200).json({ comment });
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
-         });
+         if (!comment) {
+            return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
+         }
+
+         res.status(200).json({ comment });
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
+      }
+
    },
 
    /*==============================
@@ -34,28 +35,29 @@ module.exports = {
    ==============================*/
    getCommentsByPost: async (req, res) => {
 
-      const postId = req.params.id;
+      try {
 
-      await Post.findById(postId)
-         .populate({
-            path: 'comments',
-            populate: {
-               path: 'user',
-               select: 'username'
-            }
-         })
-         .exec()
-         .then((post) => {
-            if (!post) {
-               return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
-            } else {
-               res.status(200).json({ comments: post.comments });
-            }
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el post', error: err });
-         });
+         const post = await Post.findById(req.params.id)
+            .populate({
+               path: 'comments',
+               populate: {
+                  path: 'user',
+                  select: 'username'
+               }
+            })
+            .exec();
+
+         if (!post) {
+            return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         } else {
+            res.status(200).json({ comments: post.comments });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al obtener todos los comentarios', error: err });
+      }
+
    },
 
    /*=========================
@@ -63,50 +65,37 @@ module.exports = {
    =========================*/
    createComment: async (req, res) => {
 
-      const postId = req.params.id;
+      try {
 
-      await Post.findById(postId)
-         .exec()
-         .then(async (post) => {
-            if (!post) {
-               return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
-            } else {
+         const postToAddComment = await Post.findById(req.params.id).exec();
 
-               const userId = req.body.userId;
-               const comment = req.body.comment;
+         if (!postToAddComment) {
+            return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         } else {
 
-               const newComment = await new Comment({ user: userId, comment });
+            // Espero hasta crear el nuevo comentario
+            const newComment = await new Comment({
+               user: req.body.userId,
+               comment: req.body.comment
+            });
 
-               await newComment.save()
-                  .then(async (comment) => {
-                     await post.comments.push(comment._id);
-                     await post.save()
-                        .then((post) => {
-                           Post.findOne(post)
-                              .exec()
-                              .then((post) => {
-                                 res.status(201).json({ msg: 'Comentario creado', post, comment });
-                              })
-                              .catch((err) => {
-                                 console.log(err);
-                                 res.status(500).json({ msg: 'Error al obtener el post con el nuevo comentario', error: err });
-                              });
-                        })
-                        .catch((err) => {
-                           console.log(err);
-                           res.status(500).json({ msg: 'Error al guardar el post con el nuevo comentario', error: err });
-                        });
-                  })
-                  .catch((err) => {
-                     console.log(err);
-                     res.status(500).json({ msg: 'Error al guardar el nuevo comentario', error: err });
-                  });
-            }
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el post', error: err });
-         });
+            // Espero hasta guardar el comentario en su coleccion
+            const comment = await newComment.save();
+
+            // Espero hasta pushear el comentario en el array del post
+            await postToAddComment.comments.push(comment._id);
+
+            // Espero hasta guardo el post con el nuevo comentario
+            const post = await postToAddComment.save();
+
+            res.status(201).json({ msg: 'Comentario creado', post, comment });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al guardar el nuevo comentario', error: err });
+      }
+
    },
 
    /*=========================
@@ -114,70 +103,60 @@ module.exports = {
    =========================*/
    likeComment: async (req, res) => {
 
-      const commentId = await req.params.id;
+      try {
 
-      await Comment.findById(commentId)
-         .exec()
-         .then(async (comment) => {
+         const comment = await Comment.findById(req.params.id).exec();
 
-            if (!comment) {
-               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
-            } else {
+         if (!comment) {
+            return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
+         } else {
 
-               const userIdFromComment = await comment.user.toString();
-               const userIdFromToken = await req.body.userId;
+            // Espero hasta obtener los ids
+            const [userIdFromComment, userIdFromToken] = await Promise.all([comment.user.toString(), req.body.userId]);
 
-               // Valido que no sea un comentario del usuario
-               if (userIdFromComment === userIdFromToken) {
-                  return res.status(403).json({ msg: 'No puedes darle like a tu propio comentario' });
-               }
-
-               // Creo arrays con todos los usuarios que ya le dieron like y dislike
-               const usersWhoLike = comment.likedBy.map(user => user.toString());
-               const usersWhoDislike = comment.dislikedBy.map(user => user.toString());
-
-               // Valido que no le haya dado like aun
-               if (usersWhoLike.indexOf(userIdFromToken) !== -1) {
-                  return res.status(403).json({ msg: 'Ya le has dado like' });
-               }
-
-               // Elimino el dislike del usuario si lo habia dado
-               const index = usersWhoDislike.indexOf(userIdFromToken);
-
-               if (index !== -1) {
-                  await comment.set({ dislikes: comment.dislikes -= 1 });
-                  await comment.dislikedBy.splice(index, 1);
-               }
-
-               // Persisto el like
-               await comment.likedBy.push(userIdFromToken);
-               await comment.set({ likes: comment.likes += 1 });
-               await comment.save()
-                  .then((comment) => {
-                     Comment.findOne(comment)
-                        .populate('user', 'username')
-                        .populate('likedBy', 'username')
-                        .populate('dislikedBy', 'username')
-                        .exec()
-                        .then((comment) => {
-                           res.status(200).json({ msg: 'Has dado like', comment })
-
-                        })
-                        .catch((err) => {
-                           console.log(err);
-                           res.status(500).json({ msg: 'Error al obtener el comentario que se ha dado like', error: err });
-                        });
-                  })
-                  .catch((err) => {
-                     console.log(err);
-                     res.status(500).json({ msg: 'Error al guardar el like en el comentario', error: err });
-                  });
+            // Valido que no sea un comentario del usuario
+            if (userIdFromComment === userIdFromToken) {
+               return res.status(403).json({ msg: 'No puedes darle like a tu propio comentario' });
             }
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
-         });
+
+            // Espero hasta crear los arrays con todos los usuarios que ya le dieron like y dislike
+            const [usersWhoLike, usersWhoDislike] = await Promise.all([
+               comment.likedBy.map(user => user.toString()),
+               comment.dislikedBy.map(user => user.toString())
+            ]);
+
+            // Valido que no le haya dado like aun
+            if (usersWhoLike.indexOf(userIdFromToken) !== -1) {
+               return res.status(403).json({ msg: 'Ya le has dado like' });
+            }
+
+            // Elimino el dislike del usuario si lo habia dado
+            const index = await usersWhoDislike.indexOf(userIdFromToken);
+
+            if (index !== -1) {
+               await Promise.all([
+                  comment.set({ dislikes: comment.dislikes -= 1 }),
+                  comment.dislikedBy.splice(index, 1)
+               ]);
+            }
+
+            // Espero hasta setear el like en la coleccion
+            await Promise.all([
+               comment.likedBy.push(userIdFromToken),
+               comment.set({ likes: comment.likes += 1 })
+            ]);
+
+            // Persisto el like
+            const commentLiked = await comment.save();
+
+            res.status(200).json({ msg: 'Has dado like', comment: commentLiked });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al darle like al comentario', error: err });
+      }
+
    },
 
    /*===========================
@@ -185,70 +164,60 @@ module.exports = {
    ============================*/
    dislikeComment: async (req, res) => {
 
-      const commentId = await req.params.id;
+      try {
 
-      await Comment.findById(commentId)
-         .exec()
-         .then(async (comment) => {
+         const comment = await Comment.findById(req.params.id).exec();
 
-            if (!comment) {
-               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
-            } else {
+         if (!comment) {
+            return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
+         } else {
 
-               const userIdFromComment = await comment.user.toString();
-               const userIdFromToken = await req.body.userId;
+            // Espero hasta obtener los ids
+            const [userIdFromComment, userIdFromToken] = await Promise.all([comment.user.toString(), req.body.userId]);
 
-               // Valido que no sea un comentario del usuario
-               if (userIdFromComment === userIdFromToken) {
-                  return res.status(403).json({ msg: 'No puedes darle dislike a tu propio comentario' });
-               }
-
-               // Creo arrays con todos los usuarios que ya le dieron like y dislike
-               const usersWhoLike = comment.likedBy.map(user => user.toString());
-               const usersWhoDislike = comment.dislikedBy.map(user => user.toString());
-
-               // Valido que no le haya dado dislike aun
-               if (usersWhoDislike.indexOf(userIdFromToken) !== -1) {
-                  return res.status(403).json({ msg: 'Ya le has dado dislike' });
-               }
-
-               // Elimino el like del usuario si lo habia dado
-               const index = usersWhoLike.indexOf(userIdFromToken);
-
-               if (index !== -1) {
-                  await comment.set({ likes: comment.likes -= 1 });
-                  await comment.likedBy.splice(index, 1);
-               }
-
-               // Persisto el like
-               await comment.dislikedBy.push(userIdFromToken);
-               await comment.set({ dislikes: comment.dislikes += 1 });
-               await comment.save()
-                  .then((comment) => {
-                     Comment.findOne(comment)
-                        .populate('user', 'username')
-                        .populate('likedBy', 'username')
-                        .populate('dislikedBy', 'username')
-                        .exec()
-                        .then((comment) => {
-                           res.status(200).json({ msg: 'Has dado dislike', comment })
-
-                        })
-                        .catch((err) => {
-                           console.log(err);
-                           res.status(500).json({ msg: 'Error al obtener el comentario que se ha dado dislike', error: err });
-                        });
-                  })
-                  .catch((err) => {
-                     console.log(err);
-                     res.status(500).json({ msg: 'Error al guardar el dislike en el comentario', error: err });
-                  });
+            // Valido que no sea un comentario del usuario
+            if (userIdFromComment === userIdFromToken) {
+               return res.status(403).json({ msg: 'No puedes darle dislike a tu propio comentario' });
             }
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
-         });
+
+            // Espero hasta crear los arrays con todos los usuarios que ya le dieron like y dislike
+            const [usersWhoLike, usersWhoDislike] = await Promise.all([
+               comment.likedBy.map(user => user.toString()),
+               comment.dislikedBy.map(user => user.toString())
+            ]);
+
+            // Valido que no le haya dado dislike aun
+            if (usersWhodislike.indexOf(userIdFromToken) !== -1) {
+               return res.status(403).json({ msg: 'Ya le has dado dislike' });
+            }
+
+            // Elimino el like del usuario si lo habia dado
+            const index = await usersWhoLike.indexOf(userIdFromToken);
+
+            if (index !== -1) {
+               await Promise.all([
+                  comment.set({ likes: comment.likes -= 1 }),
+                  comment.likedBy.splice(index, 1)
+               ]);
+            }
+
+            // Espero hasta setear el dislike en la coleccion
+            await Promise.all([
+               comment.dislikedBy.push(userIdFromToken),
+               comment.set({ dislikes: comment.dislikes += 1 })
+            ]);
+
+            // Persisto el dislike
+            const commentDisliked = await comment.save();
+
+            res.status(200).json({ msg: 'Has dado dislike', comment: commentDisliked });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al darle dislike al comentario', error: err });
+      }
+
    },
 
    /*=======================
@@ -256,52 +225,47 @@ module.exports = {
    ========================*/
    updateComment: async (req, res) => {
 
-      const id = await req.params.id;
+      try {
 
-      await Comment.findById(id)
-         .exec()
-         .then(async (comment) => {
-            if (!comment) {
-               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
-            } else {
+         const commentToUpdate = await Comment.findById(req.params.id).exec();
 
-               // Valido que el usuario sea el creador del comentario
-               const userIdFromComment = await comment.user.toString();
-               const userIdFromToken = await req.body.userId;
+         if (!commentToUpdate) {
+            return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID' });
+         } else {
 
-               if (userIdFromComment !== userIdFromToken) {
-                  return res.status(403).json({ msg: 'No puedes editar un comentario que no has creado' });
-               }
+            // Espero hasta obtener los user ids
+            const [userIdFromPost, userIdFromToken] = await Promise.all([
+               commentToUpdate.user.toString(),
+               req.body.userId
+            ]);
 
-               const newComment = await req.body.comment;
-
-               comment.comment = newComment;
-
-               await comment.save()
-                  .then(async (comment) => {
-                     await Comment.findOne(comment)
-                        .populate('user', 'username')
-                        .populate('likedBy', 'username')
-                        .populate('dislikedBy', 'username')
-                        .exec()
-                        .then((comment) => {
-                           res.status(200).json({ msg: 'Comentario actualizado', comment });
-                        })
-                        .catch((err) => {
-                           console.log(err);
-                           res.status(500).json({ msg: 'Error al obtener el comentario actualizado', error: err });
-                        });
-                  })
-                  .catch((err) => {
-                     console.log(err);
-                     res.status(500).json({ msg: 'Error al guardar el comentario actualizado', error: err });
-                  });
+            // Valido que sea un comentario del usuario
+            if (userIdFromPost !== userIdFromToken) {
+               return res.status(403).json({ msg: 'No puedes editar un comentario que no has creado' });
             }
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
-         });
+
+            // Espero hasta setear el comentario a actualizar
+            commentToUpdate.comment = await req.body.comment;
+
+            // Actualizo el comentario
+            const commentUpdated = await commentToUpdate.save();
+
+            // Busco el comentario actualizado para
+            // mandarlo en la respuesta con los populate
+            const comment = await Comment.findOne(commentUpdated)
+               .populate('user', 'username')
+               .populate('likedBy', 'username')
+               .populate('dislikedBy', 'username')
+               .exec();
+
+            res.status(200).json({ msg: 'Comentario actualizado', comment });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al actualizar el comentario', error: err });
+      }
+
    },
 
    /*=============================
@@ -309,67 +273,51 @@ module.exports = {
    ==============================*/
    deleteComment: async (req, res) => {
 
-      const postId = await req.params.postId;
+      try {
 
-      await Post.findById(postId)
-         .exec()
-         .then(async (post) => {
-            if (!post) {
-               return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         const post = await Post.findById(req.params.postId).exec();
+
+         if (!post) {
+            return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         } else {
+
+            // Creo array con todos los id de comentarios del post
+            const postComments = await post.comments.map(comment => comment.toString());
+
+            // Valido que el commentId este en el post
+            const index = postComments.indexOf(req.params.commentId);
+            if (index === -1) {
+               return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID en el post' });
             } else {
-               const commentId = await req.params.commentId;
+               // El comentario existe y esta en el post
 
-               // Creo array con todos los id de comentarios del post
-               const postComments = await post.comments.map(comment => comment.toString());
+               // Valido que el usuario sea el que escribio el comentario
+               const comment = await Comment.findById(req.params.commentId).exec();
 
-               // Valido que el commentId este en el post
-               const index = postComments.indexOf(commentId);
-               if (index === -1) {
-                  return res.status(404).json({ msg: 'No se ha encontrado comentario con ese ID en el post' });
-               } else {
-                  // El post existe y el comentario esta en el post
+               const [userIdFromToken, userIdFromComment] = await Promise.all([
+                  req.body.userId,
+                  comment.user.toString()
+               ]);
 
-                  // Valido que el usuario sea el que escribio el comentario
-                  await Comment.findById(commentId)
-                     .exec()
-                     .then(async (comment) => {
-
-                        const userIdFromToken = req.body.userId;
-                        const userIdFromComment = comment.user.toString();
-
-                        if (userIdFromToken !== userIdFromComment) {
-                           return res.status(403).json({ msg: 'No puedes eliminar un comentario que no has creado' });
-                        }
-
-                        // Elimino el comentario de su coleccion 
-                        // y cuando termina elimino el comentario
-                        // del array de comments del post
-                        await comment.remove()
-                           .then(async (comment) => {
-
-                              await post.comments.splice(index, 1);
-                              await post.save()
-                                 .then((post) => {
-                                    res.status(200).json({ msg: 'Cometario eliminado', post });
-                                 })
-                                 .catch((err) => {
-                                    res.status(500).json({ msg: 'Error al eliminar el comentario del array de comentarios del post', error: err });
-                                 });
-                           })
-                           .catch((err) => {
-                              res.status(500).json({ msg: 'Error al eliminar el comentario', error: err });
-                           });
-                     })
-                     .catch((err) => {
-                        res.status(500).json({ msg: 'Error al obtener el comentario', error: err });
-                     })
+               if (userIdFromToken !== userIdFromComment) {
+                  return res.status(403).json({ msg: 'No puedes eliminar un comentario que no has creado' });
                }
+
+               // Elimino el comentario de su coleccion y del array de comments del post en paralelo
+               await Promise.all([comment.remove(), post.comments.splice(index, 1)]);
+
+               // Guardo el post q se le quito el comentario
+               const postUpdated = await post.save();
+
+               res.status(200).json({ msg: 'Cometario eliminado', post: postUpdated });
             }
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el post', error: err });
-         });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al eliminar el comentario', error: err });
+      }
+
    },
 
 }
