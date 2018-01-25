@@ -1,5 +1,6 @@
 const Post = require('../models/post.model');
 const User = require('../models/user.model');
+const Comment = require('../models/comment.model');
 
 module.exports = {
 
@@ -295,6 +296,9 @@ module.exports = {
             if (userIdFromPost !== userIdFromToken) {
                return res.status(403).json({ msg: 'No puedes eliminar un post que no has creado' });
             }
+
+            // Espero hasta remover los comentarios del post de su coleccion
+            await Comment.remove({ _id: { $in: postToDelete.comments } });
 
             // Espero hasta eliminar el post
             const postDeleted = await postToDelete.remove();
