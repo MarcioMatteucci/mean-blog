@@ -57,8 +57,7 @@ module.exports = {
 
       try {
          // Espero hasta encontrar el usuario
-         const user = await User.findOne({ username: req.body.username })
-            .exec();
+         const user = await User.findOne({ username: req.body.username }).exec();
 
          if (!user) {
             return res.status(401).json({ msg: 'Nombre de usuario y/o contraseña incorrectos' });

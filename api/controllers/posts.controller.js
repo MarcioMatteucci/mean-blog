@@ -8,26 +8,29 @@ module.exports = {
    ===============*/
    getAllPosts: async (req, res) => {
 
-      await Post.find()
-         .populate('user', 'username')
-         .populate('likedBy', 'username')
-         .populate('dislikedBy', 'username')
-         .populate({
-            path: 'comments',
-            populate: {
-               path: 'user',
-               select: 'username'
-            }
-         })
-         .sort({ createdAt: 'asc' })
-         .exec()
-         .then((posts) => {
-            res.status(200).json({ total: posts.length, posts });
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener todos los posts', error: err });
-         });
+      try {
+         // Espero hasta q se ejecute la promesa que trae los posts
+         const posts = await Post.find()
+            .populate('user', 'username')
+            .populate('likedBy', 'username')
+            .populate('dislikedBy', 'username')
+            .populate({
+               path: 'comments',
+               populate: {
+                  path: 'user',
+                  select: 'username'
+               }
+            })
+            .sort({ createdAt: 'asc' })
+            .exec()
+
+         res.status(200).json({ total: posts.length, posts });
+
+      } catch (err) {
+         console.err(err);
+         res.status(500).json({ msg: 'Error al obtener todos los posts', error: err });
+      }
+
    },
 
    /*===========
@@ -35,31 +38,32 @@ module.exports = {
    ============*/
    getPostById: async (req, res) => {
 
-      const postId = await req.params.id;
+      try {
+         // Espero hasta que se ejecute la promesa que trae el post
+         const post = await Post.findById(req.params.id)
+            .populate('user', 'username')
+            .populate('likedBy', 'username')
+            .populate('dislikedBy', 'username')
+            .populate({
+               path: 'comments',
+               populate: {
+                  path: 'user',
+                  select: 'username'
+               }
+            })
+            .exec()
 
-      await Post.findById(postId)
-         .populate('user', 'username')
-         .populate('likedBy', 'username')
-         .populate('dislikedBy', 'username')
-         .populate({
-            path: 'comments',
-            populate: {
-               path: 'user',
-               select: 'username'
-            }
-         })
-         .exec()
-         .then((post) => {
-            if (!post) {
-               return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
-            }
+         if (!post) {
+            return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         }
 
-            res.status(200).json({ post });
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el post', error: err });
-         });
+         res.status(200).json({ post });
+
+      } catch (err) {
+         console.err(err);
+         res.status(500).json({ msg: 'Error al obtener el post', error: err });
+      }
+
    },
 
    /*===================
@@ -67,33 +71,24 @@ module.exports = {
    ===================*/
    createPost: async (req, res) => {
 
-      // Datos del body
-      const { title, body, userId } = await req.body;
-
-      // Creo el nuevo post con los datos del body
-      const newPost = await new Post({ title, body, user: userId });
-
-      // Persistencia del nuevo post
-      await newPost.save()
-         .then((post) => {
-            Post.findOne(post)
-               .populate('user', 'username')
-               .populate('likedBy', 'username')
-               .populate('dislikedBy', 'username')
-               .exec()
-               .then((post) => {
-                  res.status(201).json({ msg: 'Post creado', post })
-
-               })
-               .catch((err) => {
-                  console.log(err);
-                  res.status(500).json({ msg: 'Error al obtener el nuevo post', error: err });
-               });
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al guardar el nuevo post', error: err });
+      try {
+         // Espero hasta crear el nuevo post
+         const post = await new Post({
+            title: req.body.title,
+            body: req.body.body,
+            user: req.body.userId
          });
+
+         // Espero hasta guardar el nuevo post
+         const newPost = await post.save();
+
+         res.status(201).json({ msg: 'Post creado', post: newPost });
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al guardar el nuevo post', error: err })
+      }
+
    },
 
    /*===================
@@ -101,78 +96,62 @@ module.exports = {
    ===================*/
    likePost: async (req, res) => {
 
-      const postId = req.params.id;
-      const userId = req.body.userId;
+      try {
+         // Espero hasta encontrar (o no) el post
+         const post = await Post.findById(req.params.id).exec();
 
-      await Post.findById(postId)
-         .exec()
-         .then(async (post) => {
+         if (!post) {
+            return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         } else {
 
-            if (!post) {
-               return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
-            } else {
+            // Espero hasta obtener los user ids
+            const [userIdFromPost, userIdFromToken] = await Promise.all([
+               post.user.toString(),
+               req.body.userId
+            ]);
 
-               const userIdFromPost = post.user.toString();
-               const userIdFromToken = userId;
-
-               // Valido que no sea un post del usuario
-               if (userIdFromPost === userIdFromToken) {
-                  return res.status(403).json({ msg: 'No puedes darle like a tu propio post' });
-               }
-
-               // Creo arrays con todos los usuarios que ya le dieron like y dislike
-               const usersWhoLike = post.likedBy.map(user => user.toString());
-               const usersWhoDislike = post.dislikedBy.map(user => user.toString());
-
-               // Valido que no le haya dado like aun
-               if (usersWhoLike.indexOf(userIdFromToken) !== -1) {
-                  return res.status(403).json({ msg: 'Ya le has dado like' });
-               }
-
-               // Elimino el dislike del usuario si lo habia dado
-               const index = usersWhoDislike.indexOf(userIdFromToken);
-
-               if (index !== -1) {
-                  await post.set({ dislikes: post.dislikes -= 1 });
-                  await post.dislikedBy.splice(index, 1);
-               }
-
-               // Persisto el like
-               await post.likedBy.push(userIdFromToken);
-               await post.set({ likes: post.likes += 1 });
-               await post.save()
-                  .then((post) => {
-                     Post.findOne(post)
-                        .populate('user', 'username')
-                        .populate('likedBy', 'username')
-                        .populate('dislikedBy', 'username')
-                        .populate({
-                           path: 'comments',
-                           populate: {
-                              path: 'user',
-                              select: 'username'
-                           }
-                        })
-                        .exec()
-                        .then((post) => {
-                           res.status(200).json({ msg: 'Has dado like', post })
-
-                        })
-                        .catch((err) => {
-                           console.log(err);
-                           res.status(500).json({ msg: 'Error al obtener el post que se ha dado like', error: err });
-                        });
-                  })
-                  .catch((err) => {
-                     console.log(err);
-                     res.status(500).json({ msg: 'Error al guardar el like en el post', error: err });
-                  });
+            // Valido que no sea un post del usuario
+            if (userIdFromPost === userIdFromToken) {
+               return res.status(403).json({ msg: 'No puedes darle like a tu propio post' });
             }
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el post', error: err });
-         });
+
+            // Espero hasta crear arrays con todos los usuarios que ya le dieron like y dislike
+            const [usersWhoLike, usersWhoDislike] = await Promise.all([
+               post.likedBy.map(user => user.toString()),
+               post.dislikedBy.map(user => user.toString())
+            ]);
+
+            // Valido que no le haya dado like aun
+            if (usersWhoLike.indexOf(userIdFromToken) !== -1) {
+               return res.status(403).json({ msg: 'Ya le has dado like' });
+            }
+
+            // Elimino el dislike del usuario si lo habia dado
+            const index = await usersWhoDislike.indexOf(userIdFromToken);
+            if (index !== -1) {
+               await Promise.all([
+                  post.set({ dislikes: post.dislikes -= 1 }),
+                  post.dislikedBy.splice(index, 1)
+               ]);
+            }
+
+            // Espero hasta setear el like
+            await Promise.all([
+               post.likedBy.push(userIdFromToken),
+               post.set({ likes: post.likes += 1 })
+            ]);
+
+            // Persisto el like
+            const postLiked = await post.save();
+
+            res.status(200).json({ msg: 'Has dado like', post: postLiked });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al dar like al post', error: err });
+      }
+
    },
 
    /*======================
@@ -180,78 +159,62 @@ module.exports = {
    ======================*/
    dislikePost: async (req, res) => {
 
-      const postId = req.params.id;
-      const userId = req.body.userId;
+      try {
+         // Espero hasta encontrar (o no) el post
+         const post = await Post.findById(req.params.id).exec();
 
-      await Post.findById(postId)
-         .exec()
-         .then(async (post) => {
+         if (!post) {
+            return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         } else {
 
-            if (!post) {
-               return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
-            } else {
+            // Espero hasta obtener los user ids
+            const [userIdFromPost, userIdFromToken] = await Promise.all([
+               post.user.toString(),
+               req.body.userId
+            ]);
 
-               const userIdFromPost = post.user.toString();
-               const userIdFromToken = userId;
-
-               // Valido que no sea un post del usuario
-               if (userIdFromPost === userIdFromToken) {
-                  return res.status(403).json({ msg: 'No puedes darle dislike a tu propio post' });
-               }
-
-               // Creo arrays con todos los usuarios que ya le dieron like y dislike
-               const usersWhoLike = post.likedBy.map(user => user.toString());
-               const usersWhoDislike = post.dislikedBy.map(user => user.toString());
-
-               // Valido que no le haya dado dislike aun
-               if (usersWhoDislike.indexOf(userIdFromToken) !== -1) {
-                  return res.status(403).json({ msg: 'Ya le has dado dislike' });
-               }
-
-               // Elimino el like del usuario si lo habia dado
-               const index = usersWhoLike.indexOf(userIdFromToken);
-
-               if (index !== -1) {
-                  await post.set({ likes: post.likes -= 1 });
-                  await post.likedBy.splice(index, 1);
-               }
-
-               // Persisto el dislike
-               await post.dislikedBy.push(userIdFromToken);
-               await post.set({ dislikes: post.dislikes += 1 });
-               await post.save()
-                  .then((post) => {
-                     Post.findOne(post)
-                        .populate('user', 'username')
-                        .populate('likedBy', 'username')
-                        .populate('dislikedBy', 'username')
-                        .populate({
-                           path: 'comments',
-                           populate: {
-                              path: 'user',
-                              select: 'username'
-                           }
-                        })
-                        .exec()
-                        .then((post) => {
-                           res.status(200).json({ msg: 'Has dado dislike', post })
-
-                        })
-                        .catch((err) => {
-                           console.log(err);
-                           res.status(500).json({ msg: 'Error al obtener el post que se ha dado dislike', error: err });
-                        });
-                  })
-                  .catch((err) => {
-                     console.log(err);
-                     res.status(500).json({ msg: 'Error al guardar el dislike en el post', error: err });
-                  });
+            // Valido que no sea un post del usuario
+            if (userIdFromPost === userIdFromToken) {
+               return res.status(403).json({ msg: 'No puedes darle dislike a tu propio post' });
             }
-         })
-         .catch((err) => {
-            console.log(err);
-            res.status(500).json({ msg: 'Error al obtener el post', error: err });
-         });
+
+            // Espero hasta crear arrays con todos los usuarios que ya le dieron like y dislike
+            const [usersWhoLike, usersWhoDislike] = await Promise.all([
+               post.likedBy.map(user => user.toString()),
+               post.dislikedBy.map(user => user.toString())
+            ]);
+
+            // Valido que no le haya dado dislike aun
+            if (usersWhoDislike.indexOf(userIdFromToken) !== -1) {
+               return res.status(403).json({ msg: 'Ya le has dado dislike' });
+            }
+
+            // Elimino el like del usuario si lo habia dado
+            const index = await usersWhoLike.indexOf(userIdFromToken);
+            if (index !== -1) {
+               await Promise.all([
+                  post.set({ likes: post.likes -= 1 }),
+                  post.likedBy.splice(index, 1)
+               ]);
+            }
+
+            // Espero hasta setear el dislike
+            await Promise.all([
+               post.dislikedBy.push(userIdFromToken),
+               post.set({ dislikes: post.dislikes += 1 })
+            ]);
+
+            // Persisto el dislike
+            const postDisliked = await post.save();
+
+            res.status(200).json({ msg: 'Has dado dislike', post: postDisliked });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al dar dislike al post', error: err });
+      }
+
    },
 
    /*=================
@@ -259,60 +222,54 @@ module.exports = {
    ==================*/
    updatePost: async (req, res) => {
 
-      const postId = await req.params.id;
-      const userId = await req.body.userId;
+      try {
+         // Espero hasta encontrar (o no) el post         
+         const postToUpdate = await Post.findById(req.params.id).exec();
 
-      await Post.findById(postId)
-         .exec()
-         .then(async (post) => {
+         if (!postToUpdate) {
+            return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         } else {
 
-            if (!post) {
-               return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
-            } else {
+            // Espero hasta obtener los user ids
+            const [userIdFromPost, userIdFromToken] = await Promise.all([
+               postToUpdate.user.toString(),
+               req.body.userId
+            ]);
 
-               // Valido que el usuario sea el creador del post
-               const userIdFromPost = post.user.toString();
-               const userIdFromToken = userId;
-
-               if (userIdFromPost !== userIdFromToken) {
-                  return res.status(403).json({ msg: 'No puedes editar un post que no has creado' });
-               }
-
-               const newTitle = await req.body.title;
-               const newBody = await req.body.body;
-
-               post.title = newTitle;
-               post.body = newBody;
-
-               await post.save()
-                  .then((post) => {
-                     Post.findOne(post)
-                        .populate('user', 'username')
-                        .populate('likedBy', 'username')
-                        .populate('dislikedBy', 'username')
-                        .populate({
-                           path: 'comments',
-                           populate: {
-                              path: 'user',
-                              select: 'username'
-                           }
-                        })
-                        .exec()
-                        .then((post) => {
-                           res.status(200).json({ msg: 'Post actualizado', post });
-                        })
-                        .catch((err) => {
-                           res.status(500).json({ msg: 'Error al obtener el post actualizado', error: err });
-                        });
-                  })
-                  .catch((err) => {
-                     res.status(500).json({ msg: 'Error al guardar el post actualizado', error: err });
-                  });
+            // Valido que sea un post del usuario
+            if (userIdFromPost !== userIdFromToken) {
+               return res.status(403).json({ msg: 'No puedes editar un post que no has creado' });
             }
-         })
-         .catch((err) => {
-            res.status(500).json({ msg: 'Error al obtener el post para actualizar', error: err });
-         });
+
+            // Espero hasta setear el post a actualizar
+            [postToUpdate.title, postToUpdate.body] = await Promise.all([req.body.title, req.body.body]);
+
+            // Actualizo el post
+            const postUpdated = await postToUpdate.save();
+
+            // Busco el post acutalizado para mandarlo en
+            // la respuesta con los populate
+            const post = await Post.findOne(postUpdated)
+               .populate('user', 'username')
+               .populate('likedBy', 'username')
+               .populate('dislikedBy', 'username')
+               .populate({
+                  path: 'comments',
+                  populate: {
+                     path: 'user',
+                     select: 'username'
+                  }
+               })
+               .exec()
+
+            res.status(200).json({ msg: 'Post actualizado', post });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al actualizar el post', error: err });
+      }
+
    },
 
    /*===============
@@ -320,47 +277,36 @@ module.exports = {
    ===============*/
    deletePost: async (req, res) => {
 
-      const postId = await req.params.id;
-      const userId = await req.body.userId;
+      try {
+         // Espero hasta encontrar (o no) el post         
+         const postToDelete = await Post.findById(req.params.id).exec();
 
-      await Post.findById(postId)
-         .exec()
-         .then(async (post) => {
+         if (!postToDelete) {
+            return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
+         } else {
 
-            if (!post) {
-               return res.status(404).json({ msg: 'No se ha encontrado post con ese ID' });
-            } else {
+            // Espero hasta obtener los user ids
+            const [userIdFromPost, userIdFromToken] = await Promise.all([
+               postToDelete.user.toString(),
+               req.body.userId
+            ]);
 
-               // Valido que el usuario sea el creador del post
-               const userIdFromPost = post.user.toString();
-               const userIdFromToken = userId;
-
-               if (userIdFromPost !== userIdFromToken) {
-                  return res.status(403).json({ msg: 'No puedes eliminar un post que no has creado' });
-               }
-
-               await post.remove()
-                  .then((post) => {
-                     Post.findOne(post)
-                        .exec()
-                        .then((post) => {
-                           if (post) {
-                              return res.status(500).json({ msg: 'No se pudo eliminar el post', post });
-                           }
-                           res.status(200).json({ msg: 'Post eliminado' });
-                        })
-                        .catch((err) => {
-                           res.status(500).json({ msg: 'Error al obtener el post eliminado', error: err });
-                        });
-                  })
-                  .catch((err) => {
-                     res.status(500).json({ msg: 'Error al eliminar el post', error: err });
-                  });
+            // Valido que sea un post del usuario
+            if (userIdFromPost !== userIdFromToken) {
+               return res.status(403).json({ msg: 'No puedes eliminar un post que no has creado' });
             }
-         })
-         .catch((err) => {
-            res.status(500).json({ msg: 'Error al obtener el post para eliminar', error: err });
-         });
+
+            // Espero hasta eliminar el post
+            const postDeleted = await postToDelete.remove();
+
+            res.status(200).json({ msg: 'Post eliminado', postDeleted });
+         }
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al eliminar el post', error: err });
+      }
+
    },
 
 
