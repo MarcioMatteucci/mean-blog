@@ -27,22 +27,20 @@ export class SignUpComponent implements OnInit {
          Validators.required,
          Validators.minLength(2),
          Validators.maxLength(30)
-      ],
-      updateOn: 'change'
+      ]
    });
    lastname = new FormControl('', {
       validators: [
          Validators.required,
          Validators.minLength(2),
          Validators.maxLength(50)
-      ],
-      updateOn: 'change'
+      ]
    });
    username = new FormControl('', [
       Validators.required,
       Validators.minLength(3),
       Validators.maxLength(50)
-   ], [SignUpValidators.checkUsername(this.authService)]);
+   ], [SignUpValidators.usernameValidator(this.authService)]);
 
    password = new FormControl('', {
       validators: [
@@ -50,21 +48,21 @@ export class SignUpComponent implements OnInit {
          Validators.minLength(6),
          Validators.maxLength(30),
          Validators.pattern('^[a-zA-Z0-9]+$')
-      ],
-      updateOn: 'change'
+      ]
    });
    confirmPassword = new FormControl('', {
       validators: [
          Validators.required,
          Validators.minLength(6),
          Validators.maxLength(30)
-      ],
-      updateOn: 'change'
+      ]
    });
    email = new FormControl('', [
       Validators.required,
       Validators.pattern(this.emailRegExp)
-   ], [SignUpValidators.checkEmail(this.authService)]);
+   ], [SignUpValidators.emailValidator(this.authService)]);
+
+
 
    constructor(
       private authService: AuthService
@@ -80,7 +78,7 @@ export class SignUpComponent implements OnInit {
          password: this.password,
          confirmPassword: this.confirmPassword,
          email: this.email
-      }, this.passwordsMatchValidator);
+      }, SignUpValidators.passwordsMatchValidator);
    }
 
    disableForm() {
@@ -93,11 +91,6 @@ export class SignUpComponent implements OnInit {
 
    clearForm() {
       this.signUpForm.reset();
-   }
-
-   passwordsMatchValidator(fg: FormGroup): ValidationErrors | null {
-      return fg.get('password').value === fg.get('confirmPassword').value
-         ? null : { 'passwordsDontMatch': true };
    }
 
    signUp() {
