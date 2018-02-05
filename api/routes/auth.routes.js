@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { check, body, validationResult, query } = require('express-validator/check');
+const { check, body, validationResult, query, header } = require('express-validator/check');
 const { sanitize } = require('express-validator/filter');
 
 const usersController = require('../controllers/users.controller');
@@ -42,6 +42,10 @@ router.post('/signIn', [
    sanitize('password').trim().escape(),
    body('password', 'La contraseña es requerida').exists(),
 ], checkErrors, usersController.signIn);
+
+router.get('/refreshToken', [
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty()
+], checkErrors, auth.isAuth, usersController.refreshToken);
 
 router.get('/checkUsername', [
    query('username', 'El Nombre de Usuario es requerido').exists(),

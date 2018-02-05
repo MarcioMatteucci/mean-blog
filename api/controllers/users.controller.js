@@ -84,6 +84,27 @@ module.exports = {
 
    },
 
+   /*===============
+   Refrescar Token
+   ===============*/
+   refreshToken: async (req, res) => {
+
+      try {
+         const user = await User.findById(req.body.userId).exec();
+
+         const tokenInfo = await jwtService.signToken(user);
+
+         user.set({ password: ':)' });
+
+         res.status(200).json({ msg: 'Token refrescado', user, tokenInfo });
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al refrescar el token', error: err });
+      }
+
+   },
+
    /*==================
    Chequea el Username
    ===================*/
