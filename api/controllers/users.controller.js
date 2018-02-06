@@ -9,12 +9,11 @@ module.exports = {
    signUp: async (req, res) => {
 
       try {
-         // Declaro 2 promesas que van a correr en paralelo
-         const sameEmailUserPromise = User.findOne({ email: req.body.email.toLowerCase() }).exec();
-         const sameUsernameUserPromise = User.findOne({ username: req.body.username }).exec();
-
          // Corro las 2 promesas en paralelo y espero q terminen ambas
-         const [sameEmailUser, sameUsernameUser] = await Promise.all([sameEmailUserPromise, sameUsernameUserPromise]);
+         const [sameEmailUser, sameUsernameUser] = await Promise.all([
+            User.findOne({ email: req.body.email.toLowerCase() }).exec(),
+            User.findOne({ username: req.body.username }).exec()
+         ]);
 
          // Valido que el email y el username no esten en uso
          if (sameEmailUser) {
@@ -34,12 +33,11 @@ module.exports = {
             role: req.body.role
          });
 
-         // Declaro 2 promesas q pueden correr en paralelo
-         const newUserPromise = user.save();
-         const tokenInfoPromise = jwtService.signToken(user);
-
          // Corro las 2 promesas en paralelo y espero a q terminen ambas
-         const [newUser, tokenInfo] = await Promise.all([newUserPromise, tokenInfoPromise]);
+         const [newUser, tokenInfo] = await Promise.all([
+            user.save(),
+            jwtService.signToken(user)
+         ]);
 
          res.status(201).json({ msg: 'Usuario creado', user: newUser, tokenInfo });
 
