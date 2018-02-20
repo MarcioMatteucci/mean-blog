@@ -1,0 +1,58 @@
+<form [formGroup]="signInForm" novalidate>
+
+   <h2 class="mb-4">Iniciar Sesión:</h2>
+
+   <div *ngIf="hasError" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+   </div>
+
+   <div class="form-group">
+
+      <div class="input-group">
+
+         <div class="input-group-prepend">
+            <span class="input-group-text">
+               <i class="fa fa-user" aria-hidden="true"></i>
+            </span>
+         </div>
+
+         <input [ngClass]="{ 'is-invalid': username.invalid && (username.dirty || username.touched), 'is-valid': username.valid && (username.dirty || username.touched) }"
+            class="form-control" type="text" placeholder="Nombre de Usuario" formControlName="username">
+
+         <div class="invalid-feedback ml-5" *ngIf="username.invalid && (username.dirty || username.touched)">
+            <p *ngIf="username.hasError('required')">El campo es requerido.</p>
+            <p *ngIf="username.hasError('minlength') || username.hasError('maxlength')">El campo debe tener entre 3 y 50 caracteres.</p>
+         </div>
+
+      </div>
+
+   </div>
+
+   <div class="form-group">
+
+      <div class="input-group">
+
+         <div class="input-group-prepend">
+            <span class="input-group-text">
+               <i class="fa fa-lock" aria-hidden="true"></i>
+            </span>
+         </div>
+
+         <input [ngClass]="{ 'is-invalid': password.invalid && (password.dirty || password.touched), 'is-valid': password.valid && (password.dirty || password.touched) }"
+            type="password" class="form-control" autocomplete="off" placeholder="Contraseña" formControlName="password">
+
+         <div class="invalid-feedback d-flex ml-5" *ngIf="password.invalid && (password.dirty || password.touched)">
+            <p *ngIf="password.hasError('required')">El campo es requerido.</p>
+            <p *ngIf="password.hasError('minlength') || password.hasError('maxlength')">El campo debe tener entre 6 y 30 caracteres.</p>
+            <p *ngIf="password.hasError('pattern') && !(password.hasError('required') || password.hasError('minlength') || password.hasError('maxlength'))">No se permiten caracteres especiales. Solo números y/o letras.</p>
+         </div>
+
+      </div>
+
+   </div>
+
+   <button [disabled]="!signInForm.valid || processing" type="button" class="btn btn-success mt-4" (click)="signIn()">
+      <i class="fa fa-check" aria-hidden="true"></i>&nbsp;&nbsp;Iniciar Sesión
+   </button>
+
+</form>

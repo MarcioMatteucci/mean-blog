@@ -16,13 +16,15 @@ import { SignUpValidators } from './validators/sign-up.validator';
 // Components
 import { AppComponent } from './app.component';
 import { SignUpComponent } from './components/sign-up/sign-up.component';
+import { SignInComponent } from './components/sign-in/sign-in.component';
 
 
 
 @NgModule({
    declarations: [
       AppComponent,
-      SignUpComponent
+      SignUpComponent,
+      SignInComponent
    ],
    imports: [
       BrowserModule,

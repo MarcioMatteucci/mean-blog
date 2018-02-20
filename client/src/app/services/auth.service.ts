@@ -21,6 +21,10 @@ export class AuthService {
       return this.http.post(this.apiUrl + 'auth/signUp', user);
    }
 
+   signIn(user: User) {
+      return this.http.post(this.apiUrl + 'auth/signIn', user);
+   }
+
    checkUsername(username: string): Observable<boolean> {
       return this.http.get(this.apiUrl + 'auth/checkUsername?username=' + username)
          .map((res: any) => res.isUsernameAvailable);

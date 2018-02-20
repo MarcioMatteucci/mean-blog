@@ -1,8 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators, ValidationErrors, AbstractControl } from '@angular/forms';
-import { Observable } from 'rxjs/Observable';
+import { Component } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
-import { User } from './../../models/user.model';
 import { AuthService } from './../../services/auth.service';
 import { SignUpValidators } from './../../validators/sign-up.validator';
 
@@ -11,7 +9,7 @@ import { SignUpValidators } from './../../validators/sign-up.validator';
    templateUrl: './sign-up.component.html',
    styleUrls: ['./sign-up.component.css']
 })
-export class SignUpComponent implements OnInit {
+export class SignUpComponent {
 
    // tslint:disable-next-line:max-line-length
    emailRegExp = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
@@ -63,10 +61,7 @@ export class SignUpComponent implements OnInit {
    ], [SignUpValidators.emailValidator(this.authService)]);
 
 
-
-   constructor(
-      private authService: AuthService
-   ) {
+   constructor(private authService: AuthService) {
       this.createSignUpForm();
    }
 
@@ -110,12 +105,9 @@ export class SignUpComponent implements OnInit {
                this.enableForm();
             }, 2000);
          },
-         (err: any) => {
-            console.log(err);
-         });
-   }
-
-   ngOnInit() {
+            (err: any) => {
+               console.log(err);
+            });
    }
 
 }
