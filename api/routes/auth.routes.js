@@ -33,7 +33,8 @@ router.post('/signUp', [
    body('email', 'El email es requerido').exists(),
    body('email', 'No es un formato de email válido').isEmail(),
    sanitize('role').trim().escape(),
-   body('role', 'No es un rol válido').optional().isIn(['admin', 'user'])
+   body('role', 'No es un rol válido').optional().isIn(['admin', 'user']),
+   body('image').optional()
 ], checkErrors, usersController.signUp);
 
 router.post('/signIn', [

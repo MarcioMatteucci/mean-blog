@@ -1,5 +1,8 @@
+const path = require('path');
+
 const User = require('../models/user.model');
 const jwtService = require('../services/jwt.service');
+const fileUploadService = require('../services/fileUpload.service');
 
 module.exports = {
 
@@ -23,6 +26,26 @@ module.exports = {
             return res.status(422).json({ msg: 'El nombre de usuario está en uso' });
          }
 
+         let path = undefined;
+
+         // Si viene la imagen
+         if (req.files) {
+
+            const file = req.files.image;
+
+            // Valido que sea una extension valida
+            if (!fileUploadService.isValidExtension(file.name)) {
+               return res.status(400).json({ msg: 'No es una extension válida', filename: file.name });
+            }
+
+            // Renombro el archivo con el username y datenow
+            const renamedFile = fileUploadService.renameFile(file.name, req.body.username);
+            path = `./uploads/users/${renamedFile}`;
+
+            // Guardo la imagen
+            await file.mv(path);
+         }
+
          // Espero para q se cree el nuevo usuario
          const user = await new User({
             name: req.body.name,
@@ -30,7 +53,8 @@ module.exports = {
             username: req.body.username,
             password: req.body.password,
             email: req.body.email.toLowerCase(),
-            role: req.body.role
+            role: req.body.role,
+            image: path
          });
 
          // Corro las 2 promesas en paralelo y espero a q terminen ambas
@@ -145,6 +169,26 @@ module.exports = {
          res.status(500).json({ msg: 'Error al buscar disponibilidad de nombre de usuario', error: err });
       }
 
+   },
+
+   /*===========================
+   Obtener la imagen del usuario
+   ===========================*/
+   getImageByUser: async (req, res) => {
+
+      try {
+         // Como es una ruta con autenticacion el usuario ya viene
+         // en el token, no necesito pasar el userId por params
+         const user = await User.findById(req.body.userId).exec();
+
+         res.sendFile(path.resolve(user.image));
+
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ msg: 'Error al obtener la imagen del usuario', error: err });
+      }
+
    }
+
 
 }
