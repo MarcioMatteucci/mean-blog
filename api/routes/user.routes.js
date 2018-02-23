@@ -18,6 +18,6 @@ function checkErrors(req, res, next) {
 
 router.get('/image', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty()
-], checkErrors, auth.isAuth, UsersController.getImageByUser);
+], checkErrors, auth.isAuth, UsersController.getImageLoggedUser);
 
 module.exports = router;

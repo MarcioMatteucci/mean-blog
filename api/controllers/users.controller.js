@@ -28,23 +28,8 @@ module.exports = {
 
          let path = undefined;
 
-         // Si viene la imagen
-         if (req.files) {
-
-            const file = req.files.image;
-
-            // Valido que sea una extension valida
-            if (!fileUploadService.isValidExtension(file.name)) {
-               return res.status(400).json({ msg: 'No es una extension válida', filename: file.name });
-            }
-
-            // Renombro el archivo con el username y datenow
-            const renamedFile = fileUploadService.renameFile(file.name, req.body.username);
-            path = `./uploads/users/${renamedFile}`;
-
-            // Guardo la imagen
-            await file.mv(path);
-         }
+         // Si viene la imagen espero hasta subirla y recibir el path
+         if (req.files) path = await fileUploadService.uploadFile(req.files.image, req.body.username);
 
          // Espero para q se cree el nuevo usuario
          const user = await new User({
@@ -63,11 +48,17 @@ module.exports = {
             jwtService.signToken(user)
          ]);
 
+         user.set({ password: ':)' });
+
          res.status(201).json({ msg: 'Usuario creado', user: newUser, tokenInfo });
 
       } catch (err) {
          console.error(err);
-         res.status(500).json({ msg: 'Error al crear usuario', error: err });
+         if (err.status) {
+            res.status(err.status).json({ error: err.msg });
+         } else {
+            res.status(500).json({ msg: 'Error al crear usuario', error: err });
+         }
       }
 
    },
@@ -171,14 +162,18 @@ module.exports = {
 
    },
 
-   /*===========================
-   Obtener la imagen del usuario
-   ===========================*/
-   getImageByUser: async (req, res) => {
+   // Faltaria un endpoint para traer las imagenes de los usuarios
+   // por su id, no solo la imagen del user q esta logeado.
+   // Para mostrarlas en la info de los post, comments y rankings.
+   /*====================================
+   Obtener la imagen del usuario logeado
+   ====================================*/
+   getImageLoggedUser: async (req, res) => {
 
       try {
          // Como es una ruta con autenticacion el usuario ya viene
          // en el token, no necesito pasar el userId por params
+         // ni validar que el usuario exista
          const user = await User.findById(req.body.userId).exec();
 
          res.sendFile(path.resolve(user.image));
@@ -188,7 +183,22 @@ module.exports = {
          res.status(500).json({ msg: 'Error al obtener la imagen del usuario', error: err });
       }
 
-   }
+   },
 
+   // TODO
+   /*===========================
+   Obtener todos los usuarios
+   ===========================*/
+   getAllUsers: async (req, res) => {
+
+   },
+
+   // TODO
+   /*================================
+   Obtener imagen de usuario por user
+   =================================*/
+   getImageByUser: async (req, res) => {
+
+   }
 
 }

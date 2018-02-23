@@ -17,7 +17,9 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(fileUpload());
+app.use(fileUpload({
+   limits: { fileSize: 5 * 1024 * 1024 } // Max Size, mirar el valor de truncated
+}));
 
 // Static files
 
