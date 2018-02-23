@@ -28,7 +28,7 @@ module.exports = {
 
          let path = undefined;
 
-         // Si viene la imagen espero hasta subirla y recibir el path
+         // Si viene la imagen espero hasta subirla y recibir el path (lo q se guarda en la db)
          if (req.files) path = await fileUploadService.uploadFile(req.files.image, req.body.username);
 
          // Espero para q se cree el nuevo usuario
