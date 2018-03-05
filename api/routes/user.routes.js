@@ -20,4 +20,8 @@ router.get('/image', [
    header('Authorization', 'Se debe proveer un Token').not().isEmpty()
 ], checkErrors, auth.isAuth, UsersController.getImageLoggedUser);
 
+router.patch('/', [
+   header('Authorization', 'Se debe proveer un Token').not().isEmpty(),
+], checkErrors, auth.isAuth, UsersController.updateUserImage);
+
 module.exports = router;

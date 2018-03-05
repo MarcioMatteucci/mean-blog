@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 
 const User = require('../models/user.model');
 const jwtService = require('../services/jwt.service');
@@ -26,11 +27,6 @@ module.exports = {
             return res.status(422).json({ msg: 'El nombre de usuario está en uso' });
          }
 
-         let path = undefined;
-
-         // Si viene la imagen espero hasta subirla y recibir el path (lo q se guarda en la db)
-         if (req.files) path = await fileUploadService.uploadFile(req.files.image, req.body.username);
-
          // Espero para q se cree el nuevo usuario
          const user = await new User({
             name: req.body.name,
@@ -38,8 +34,7 @@ module.exports = {
             username: req.body.username,
             password: req.body.password,
             email: req.body.email.toLowerCase(),
-            role: req.body.role,
-            image: path
+            role: req.body.role
          });
 
          // Corro las 2 promesas en paralelo y espero a q terminen ambas
@@ -54,11 +49,7 @@ module.exports = {
 
       } catch (err) {
          console.error(err);
-         if (err.status) {
-            res.status(err.status).json({ error: err.msg });
-         } else {
-            res.status(500).json({ msg: 'Error al crear usuario', error: err });
-         }
+         res.status(500).json({ msg: 'Error al crear usuario', error: err });
       }
 
    },
@@ -194,11 +185,60 @@ module.exports = {
    },
 
    // TODO
+   /*===========================
+   Obtener usuario por su Id
+   ===========================*/
+   getUserById: async (req, res) => {
+
+   },
+
+   // TODO
    /*================================
    Obtener imagen de usuario por user
    =================================*/
    getImageByUser: async (req, res) => {
 
+   },
+
+   // TODO
+   /*==================================
+   Actualizar imagen de perfil del user
+   ===================================*/
+   updateUserImage: async (req, res) => {
+
+      try {
+         // Valido que venga la imagen
+         if (!req.files) {
+            return res.status(422).json({ msg: 'La imagen es requerida' });
+         }
+
+         // Busco el usuario que viene en el token, seguro existe
+         const user = await User.findById(req.body.userId).exec();
+
+         // Elimino la imagen anterior
+         if (fs.existsSync(user.image) && user.image !== './uploads/users/default-avatar.png') {
+            // Ya tiene una imagen de usuario anterior
+            await fs.unlinkSync(user.image);
+         }
+
+         // Si viene la imagen espero hasta subirla y recibir el path (lo q se guarda en la db)
+         const imagePath = await fileUploadService.uploadFile(req.files.image, user.username);
+
+         user.image = imagePath;
+
+         // Persisto
+         await user.save();
+
+         res.status(200).json({ user });
+
+      } catch (err) {
+         console.error(err);
+         if (err.status) {
+            res.status(err.status).json({ error: err.msg });
+         } else {
+            res.status(500).json({ msg: 'Error al actualizar la imagen de usuario', error: err });
+         }
+      }
    }
 
 }
