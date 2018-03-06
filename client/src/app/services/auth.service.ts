@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { catchError } from 'rxjs/operators';
 
+import { tokenNotExpired } from 'angular2-jwt';
+
 import { User } from './../models/user.model';
 import { environment } from '../../environments/environment';
 
@@ -30,8 +32,12 @@ export class AuthService {
          .map((res: any) => res.isUsernameAvailable);
    }
 
-   checkEmail(email: string) {
+   checkEmail(email: string): Observable<boolean> {
       return this.http.get(this.apiUrl + 'auth/checkEmail?email=' + email)
          .map((res: any) => res.isEmailAvailable);
+   }
+
+   isLoggedIn(): boolean {
+      return tokenNotExpired();
    }
 }

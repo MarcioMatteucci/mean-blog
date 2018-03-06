@@ -61,8 +61,10 @@ export class SignInComponent {
 
       this.authService.signIn(user)
          .subscribe((data: any) => {
+            console.log(data);
             localStorage.setItem('token', data.tokenInfo.token);
             localStorage.setItem('exp', data.tokenInfo.exp);
+            localStorage.setItem('user', JSON.stringify(data.user));
             setTimeout(() => {
                this.processing = false;
                this.signInForm.reset();

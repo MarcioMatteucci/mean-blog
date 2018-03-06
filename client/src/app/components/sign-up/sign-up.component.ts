@@ -11,8 +11,7 @@ import { SignUpValidators } from './../../validators/sign-up.validator';
 })
 export class SignUpComponent {
 
-   // tslint:disable-next-line:max-line-length
-   emailRegExp = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+   emailRegExp = new RegExp(/^([a-z\d\.-_]+)@([a-z\d-]+)\.([a-z]{2,8})(\.[a-z]{2,8})?$/);
 
    processing = false;
 
@@ -97,8 +96,10 @@ export class SignUpComponent {
 
       this.authService.signUp(newUser)
          .subscribe((data: any) => {
+            console.log(data);
             localStorage.setItem('token', data.tokenInfo.token);
             localStorage.setItem('exp', data.tokenInfo.exp);
+            localStorage.setItem('user', JSON.stringify(data.user));
             setTimeout(() => {
                this.processing = false;
                this.signUpForm.reset();

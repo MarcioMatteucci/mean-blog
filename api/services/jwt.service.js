@@ -8,7 +8,7 @@ module.exports = {
          sub: user._id,
          role: user.role,
          iat: moment().unix(), // Current time
-         exp: moment().add(1, 'days').unix() // 1 dia hasta que expire el token
+         exp: moment().add(1, 'd').unix() // 1 dia hasta que expire el token
       }
 
       return { token: jwt.sign(payload, process.env.JWT_SECRET), exp: payload.exp };

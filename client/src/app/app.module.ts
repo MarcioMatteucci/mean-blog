@@ -17,6 +17,8 @@ import { SignUpValidators } from './validators/sign-up.validator';
 import { AppComponent } from './app.component';
 import { SignUpComponent } from './components/sign-up/sign-up.component';
 import { SignInComponent } from './components/sign-in/sign-in.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { HomeComponent } from './components/home/home.component';
 
 
 
@@ -24,7 +26,9 @@ import { SignInComponent } from './components/sign-in/sign-in.component';
    declarations: [
       AppComponent,
       SignUpComponent,
-      SignInComponent
+      SignInComponent,
+      NavbarComponent,
+      HomeComponent
    ],
    imports: [
       BrowserModule,
