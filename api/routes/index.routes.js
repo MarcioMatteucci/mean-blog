@@ -15,4 +15,7 @@ router.use('/comment', require('./comment.routes'));
 // Rutas de usuarios
 router.use('/user', require('./user.routes'));
 
+// Rutas de busqueda
+router.use('/search', require('./search.routes'));
+
 module.exports = router;
